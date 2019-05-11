@@ -1,10 +1,11 @@
 body {
-  padding: 0;
-  margin: 0;
- line-height: 1em;
-  font: 14px  'Didact Gothic', sans-serif;
+    padding: 0;
+    margin: 0; 
+    line-height: 1em;
+    font: 14px  'Didact Gothic', sans-serif;
 	height: 100%;
 	width: 100%;
+    background: hsla(258, 64%, 95%, 1);
 }
 html{
 	font-size: 14px;
@@ -45,6 +46,8 @@ a {
     width: 100%;
     position: absolute;
     overflow: hidden;
+	    top: 0;
+    left: 0;
     	background: linear-gradient(-98deg, hsla(257, 76%, 69%, 1),hsla(267, 76%, 24%, 1));
 }
 .backdrop-traingle {
@@ -104,4 +107,31 @@ a {
     display: inline-block;
     position: absolute;
     right: 0;
+}
+div#content-exhibit {
+    overflow: hidden;
+    height: 0;
+	display: none;
+}
+.header-big-text .extension{
+	    font-size: 1.5rem;
+}
+.header-big-text {
+    margin-left: -10rem;
+    font-size: 2.5rem;
+    display: inline-block;
+    padding: 0 1rem;
+    line-height: 1;
+}
+
+#front-section .section-item {
+    min-width: 24rem;
+}
+
+@media and screen (width < 1440px){
+	#front-section .section-item {
+		min-width: 30rem;
+	}
+	
+	
 }

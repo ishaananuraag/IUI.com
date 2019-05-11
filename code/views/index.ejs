@@ -12,11 +12,12 @@
 
   </head>
   <body>
-  
+  <exhibit id="home-exhibit" class="home-exhibit">
 	<div class="header">
+		<div class="header-big-text font-heading no-select">IUI<div class="extension">.js</div></div>
 		<div class="heaeder-links no-select">
 			<div class="sections">
-				<div class="section-item">Demos</div>
+				<div class="section-item">Play and Run</div>
 					<div class="separator"></div>
 				<div class="section-item">Contact Us</div>
 					<div class="separator"></div>
@@ -31,17 +32,20 @@
 		<div class="big-text font-heading no-select">IUI<div class="extension">.js</div></div>
 		<div class="description no-select">Fast and Easy UI Engine</div>
 	
-		<div class="sections no-select">
-			<div class="section-item">WIDGETS</div>
+		<div id="front-section" class="sections no-select">
+			<div class="section-item" view="widget-view" >WIDGETS</div>
+				<div class="separator" ></div>
+			<div class="section-item" view="container-view">CONTAINERS</div>
 				<div class="separator"></div>
-			<div class="section-item">CONTAINERS</div>
+			<div class="section-item" view="layouts-view">LAYOUTS</div>
 				<div class="separator"></div>
-			<div class="section-item">LAYOUTS</div>
-				<div class="separator"></div>
-			<div class="section-item">UTILITIES</div>
+			<div class="section-item" view="utility-view">UTILITIES</div>
 		</div>
-	
 	</div>
+	</exhibit>
+	<exhibit id="content-exhibit" class="content-exhibit">
+		<sidebar width="1rem"></sidebar>
+	</exhibit>
 	<div class="backdrop"><div class="backdrop-traingle"></div></div>
   
   <script data-main="main.js" src='/javascripts/vendors/require.js'></script>
