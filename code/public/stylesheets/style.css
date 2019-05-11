@@ -1,8 +1,107 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  padding: 0;
+  margin: 0;
+ line-height: 1em;
+  font: 14px  'Didact Gothic', sans-serif;
+	height: 100%;
+	width: 100%;
+}
+html{
+	font-size: 14px;
+	height: 100%;
+	width: 100%;
+}
+.font-heading{
+ font: 1rem "Baloo Bhai", cursive;	
 }
 
 a {
   color: #00B7FF;
+}
+
+.front-text{
+	position: absolute;
+	width: 100%;
+    top: calc(50% - 11rem);
+    text-align: center;
+    color: white;    
+    z-index: 2;
+}
+.description {
+    font-size: 3rem;
+    line-height: 1;
+	
+}
+.big-text {
+    font-size: 14rem;
+	line-height: 10rem;
+}
+.extension {
+    display: inline-block;
+    font-size: 5rem;
+}
+.backdrop {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    overflow: hidden;
+    	background: linear-gradient(-98deg, hsla(257, 76%, 69%, 1),hsla(267, 76%, 24%, 1));
+}
+.backdrop-traingle {
+    background: linear-gradient(45deg,hsla(257, 76%, 10%, 1),hsla(257, 76%, 72%, 1));
+    box-shadow: 0 0 29px hsla(257, 76%, 83%, 1);
+    position: absolute;
+    height: 69%;
+    width: 63%;
+    right: -14%;
+    top: 19%;
+    border-radius: 2rem;
+    transform: rotateZ(-38deg);
+}
+.separator {
+    display: inline-block;
+    width: .1rem;
+    background: white;
+    height: 3em;
+}
+.no-select{
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */      
+}
+.section-item:hover {
+	color: white;
+}.section-item:active {
+	color: pink;
+}
+.section-item {
+	color: pink;
+	cursor: pointer;
+    display: inline-block;
+    width: 22%;
+    font-size: 4rem;
+    margin-top: 3rem;
+}
+.header {
+    position: absolute;
+    height: 3rem;
+    width: 100%;
+    top: 2rem;
+    color: white;
+    z-index: 2;
+}
+.header .section-item {
+	margin: 0;
+    font-size: 1.5rem;
+    width: 9rem;
+    text-align: center;
+}
+.header .separator{
+	height: 1em;
+}
+.heaeder-links {
+    display: inline-block;
+    position: absolute;
+    right: 0;
 }
