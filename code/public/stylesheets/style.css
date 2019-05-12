@@ -164,13 +164,14 @@ div#home-exhibit {
 
 #bongo-cat-coder {
 	    margin: 2rem;
-    border-radius: 15rem;
+    border-radius: 30rem;
     height: 30rem;
     border: 12px solid #D32F2F;
     box-shadow: 0 0 11px 1px black, 15px 4px 5px 3px black inset, 0 0 0px 16px #B39DDB;
 }
 
 .main-content{
+    overflow: auto;
     text-align: center;
     padding: 2rem;
 	padding-top: 3rem;

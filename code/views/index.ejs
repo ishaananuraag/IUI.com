@@ -2,16 +2,30 @@
 <html>
   <head>
     <title><%= title %></title>
-	<link href="https://fonts.googleapis.com/css?family=Baloo+Bhai|Didact+Gothic" rel="stylesheet">
+	<!--<link href="https://fonts.googleapis.com/css?family=Baloo+Bhai|Didact+Gothic" rel="stylesheet">-->
 	
 	<link rel="stylesheet" type="text/css" href="stylesheets/IUI/themes/IUI-base.theme.css"></link>
 	<link rel="stylesheet" type="text/css" href="stylesheets/IUI/themes/IUI-rounded.theme.css"></link>
 	<link rel="stylesheet" type="text/css" href="stylesheets/IUI/IUI.css"></link>
 	<link rel="stylesheet" type="text/css" href="stylesheets/style.css"></link>
 	<link rel="stylesheet" type="text/css" href="stylesheets/font/css/font.css"></link>
+	<link rel="stylesheet" type="text/css" href="stylesheets/font/css/googleFonts.css"></link>
 
   </head>
   <body>
+
+  <view name="under-construction-view">
+		<img id="bongo-cat-coder" src="/images/bongo-cat-coder.gif">
+		<div class="warning-page-text">
+			<div>
+				<i class="fa fa-warning warning-page-icon"></i>
+				<span class="warning-page-heading font-heading">Please Wait </span>
+			</div>
+			<div class="warning-description">Website Under Development</div>
+		</div>
+  </view>
+  
+  
   <exhibit id="home-exhibit" class="home-exhibit">
 	<div class="header">
 		<div class="header-big-text font-heading no-select">IUI<div class="extension">.js</div></div>
@@ -46,17 +60,10 @@
 	</exhibit>
 	</exhibit>
 	<exhibit id="content-exhibit" class="content-exhibit">
-		<exhibit class="main-content">
+		<viewport defaultView="under-construction-view" class="main-content">
 			
-				<img id="bongo-cat-coder" src="/images/bongo-cat-coder.gif">
-				<div class="warning-page-text">
-					<div>
-						<i class="fa fa-warning warning-page-icon"></i>
-						<span class="warning-page-heading font-heading">Please Wait </span>
-					</div>
-					<div class="warning-description">Website Under Development</div>
-				</div>
-		</exhibit>		
+			
+		</viewport>		
 	</exhibit>
 	<div class="backdrop"><div class="backdrop-traingle"></div></div>
   

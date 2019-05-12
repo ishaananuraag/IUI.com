@@ -46,7 +46,6 @@ require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
 		element.css(style,element.css(style)).animate(obj,time || 500, callback);
 	}
 	
-	
 	var _animateOutOfHome= function(){
 		
 		$('#front-section').css({
@@ -63,15 +62,9 @@ require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
 		$('.home-exhibit').css('padding-top', '4rem');
 		animateStyle($('.header'),'padding-top', '1rem');
 		
-		$('#front-section').css({'overflow':'hidden', 'white-space': 'nowrap'});
-	
-		
-		
-		
-		
-		
+	//	$('#front-section').css({'overflow':'hidden', 'white-space': 'nowrap'});
+
 		setTimeout(function(){
-			
 				animateStyle($('.front-text'),'opacity', '0',150, function(){
 					$('.front-exhibit').remove();
 				});

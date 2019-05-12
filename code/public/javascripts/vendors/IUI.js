@@ -106,15 +106,21 @@
 		return keys;
 	};
 
+	var _isObject = function(_obj){
+		return _obj && typeof _obj === "object" && _obj.constructor===Object
+	}
+	
 	var _extendObject=function(obj) {
 		var length = arguments.length;
 		if ( obj == null) return obj;
+		
 		var keys=_getKeys(obj), l=keys.length, newObj={};
+		
 		for (var i = 0; i < l; i++) {
 			var _obj=obj[keys[i]];
 			if(typeof _obj === "object" && Array.isArray(_obj)){
 				_obj=Array.prototype.slice.call(_obj);
-			}else if(_obj && typeof _obj === "object" && _obj.constructor===Object){
+			}else if(_isObject(_obj)){
 				_obj=_extendObject(_obj);
 			}
 			newObj[keys[i]] =_obj ;
@@ -126,7 +132,11 @@
 				l = keys.length;
 			for (var i = 0; i < l; i++) {
 				var key = keys[i];
-				newObj[key] = source[key];
+				if(newObj[key] && (_isObject(source[key]) && _isObject(newObj[key]))){
+					newObj[key]=_extendObject(newObj[key],source[key]);
+				}else{
+					newObj[key] = source[key];
+				}
 			}
 		}
 		return newObj;
@@ -145,7 +155,6 @@
 	IUIClass.prototype.initialize=function(options){
 		this.load(options);
 		this.options=_extendObject((this.options) || ({}),options);	
-		
 		this._handlers={};		
 		this._bind(this.options);
 		if(this.options.eventgroup){
@@ -521,14 +530,18 @@
 	* @param {Element} container - the container in which the widget is contained.
 	*/
 	var _buildWidget=function(element,container,model){
+		
 		if( container && container.classType==='ObservableModel'){
 			model=container;
 			container=undefined;
 		}
-		var options=Array.prototype.slice.call(element.attributes).reduce(_extractAttribute,{});
-		options.element=element;	
-		options.container=container;
-		options.model=model;		
+		
+		var options=Array.prototype.slice.call(element.attributes).reduce(_extractAttribute,{
+			element : element,
+			container : container,
+			model : model 
+		});
+		
 		return new this(options);
 	}
 	
@@ -638,11 +651,29 @@
 			data:[],
 			schema:{
 				idField: 'id',
-				textField: 'text'
+				textField: 'text',
+				model:{	}
 			}
 		},
 		state:{
 			fetched:false
+		},
+		initialize: function(options){
+			IUI.Class.prototype.initialize.apply(this,arguments);		
+			this.persist=this.options.persist;
+			this.name=this.options.name;
+			this._validateSchema();
+			if(this.options.autofetch){
+				this.fetch();
+			}
+			bindDataMart(this);
+		},
+		
+		_validateSchema: function(){
+			if(Object.keys(this.options.schema.model)){
+				this.options.schema.model[this.options.schema.idField] = {dataType: 'string'};
+				this.options.schema.model[this.options.schema.textField] = {dataType: 'string'};
+			}
 		},
 		addAt: function(index, dataItem){
 			if(dataItem.constructor !== IUI.DataItem){
@@ -697,17 +728,27 @@
 				this.options.data.add(dataItem);
 			}
 		},
-		initialize: function(options){
-			IUI.Class.prototype.initialize.apply(this,arguments);		
-			this.preserve=this.options.preserve;
-			this.name=this.options.name;
-			bindDataMart(this);
-			if(this.options.autofetch){
-				this.fetch();
-			}
-		},
 		_handleDataItemChange: function(e){
 			
+		},
+		sort: function(sortOptions){
+			if(!this.state.fetched){
+				this.options.sort = sortOptions;
+			}
+			
+			if(typeof sortOptions === 'undefined'){
+				sortOptions={field:  this.options.schema.idField, dataType: this.options.schema.model[this.options.schema.idField].dataType};
+			}
+			if(Array.isArray(sortOptions)){
+				for(var i=0;i<sortOptions.length;++i){
+					(sortOptions[i].dataType) || (sortOptions[i].dataType=this.options.schema.model[sortOptions[i].field]?this.options.schema.model[sortOptions[i].field].dataType:'string');
+				}
+			}else{
+				(sortOptions.dataType) || (sortOptions.dataType=this.options.schema.model[sortOptions.field]?this.options.schema.model[sortOptions.field].dataType:'string');
+			}
+			
+			this.data=IUI.utils.quickSort(this.data, sortOptions);		
+			this.trigger('change',{data:this.data});
 		},
 		_makeObjectFromRawData: function(rawData){
 			var _temp={};
@@ -739,10 +780,10 @@
 			
 			return _data;
 		},
-		fetch: function(){
-			this.data=this._processData(this.options.data);				
-			this.trigger('fetch',{data:this.data});
+		fetch: function(data){
+			this.data=this._processData(data || this.data || this.options.data);				
 			this.state.fetched=true;
+			this.trigger('fetch',{data:this.data});
 		}
 		
 		
@@ -754,6 +795,7 @@
 			widget._bindDataMart(DataMart._dataBindings[name]);
 			if(DataMart._dataBindings[name].state.fetched)
 				DataMart._dataBindings[name].trigger('fetch',{data:DataMart._dataBindings[name].data});
+			
 			if(!DataMart._dataBindings[name].persist){
 				delete DataMart._dataBindings[name];
 			}
@@ -1100,6 +1142,26 @@
 });
 (function (factory) {
    if(typeof define === "function" && define.amd) {    
+	define('Utils',['IUI-core'],factory);
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){
+
+	var _utilities={}
+	
+	IUI.registerUtil = function(name, handler){
+		Object.defineProperty(_utilities, name,{
+			value: handler,
+			writable: false
+		});	
+	}
+	
+	IUI.utils=_utilities;
+
+});
+(function (factory) {
+   if(typeof define === "function" && define.amd) {    
 	define('OptionModel',['IUI-core','ObservableModel','Template'],factory);
 	
   } else {
@@ -1271,7 +1333,7 @@
 			}
 		},
 		_handleOptionChange:function(key,value){
-			if(key in this.element.style){
+			if(this.element && key in this.element.style){
 				this.element.style[key]=value;
 			}else if(key.match(IUI.iiAttributeRegex)){
 				this.$element.attr(key,value);
@@ -1305,7 +1367,6 @@
 				}
 				
 				if(typeof IUI.WidgetBuilder.containerList[elem.tagName] !== "undefined"){		
-				
 					var container=IUI.WidgetBuilder.containerList[elem.tagName](elem,this.element,this.options.model);
 					if(container.options.id){
 						this.containers[container.options.id]=container;
@@ -1445,6 +1506,7 @@
 				IUI.DataMart.bindWidget(this.options.datamart,this);
 			}
 			IUI.uiContainers.Container.prototype.makeUI.apply(this,arguments);
+			this._attachEvents();
 		},
 		_bindDataMart: function(dataMart){
 			this.dataMart=dataMart;
@@ -1460,6 +1522,9 @@
 			
 			
 		},
+		_attachEvents: function(){
+			
+		}
 	});
 	
 	IUI.WidgetBuilder.plugin(DataBoundContainer);
@@ -1622,6 +1687,180 @@
 });
 (function (factory) {
    if(typeof define === "function" && define.amd) {    
+	define('QuickSort',['IUI-core','Utils'],factory);
+	
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){
+
+	var originalIndexArr;
+	
+	var _defaultComparator = function(a,b){	
+		return (a - b)*this.multiplier;
+	}
+	
+	var _defaultStringComparator = function(a,b){	
+		return (a<b?(-1):(a === b?(0):(1)))*this.multiplier;
+	}
+	
+	var _defaultBooleanComparator = function(a,b){	
+		return ((!a === !b)?0:((!a)?-1:1))*this.multiplier;
+	}
+	
+	var _getStringComparatorForField = function(field, multiplier){
+		return function(a,b){	
+			return multiplier*(a[field]<b[field]?(-1):(a[field] === b[field]?(0):(1))); 
+		}
+	}
+	
+	var _getNumberComparatorForField = function(field, multiplier){
+		return function(a,b){	
+			return multiplier*(a[field] - b[field]);
+		}
+	}
+	
+	var _getBooleanComparatorForField = function(field, multiplier){
+		return function(a,b){	
+			return multiplier*((!a[field] === !b[field])?0:((!a[field])?-1:1));
+		}
+	}
+	
+
+	var negateComparator = function(comparator){
+		return function(){
+			return -(comparator.apply(this, arguments));
+		}
+	}
+	
+	var _sort = function(array, startIndex, endIndex, comparator){
+		
+		if(startIndex >= endIndex){
+			return;
+		}
+		var _index = startIndex, pivot = endIndex, _temp, noswap;
+		
+		for(var i= startIndex; i < endIndex; ++i){
+			
+			if(comparator(array[i], array[i+1]) < 0 && i+1 < endIndex ){
+				_temp 			= array[i];
+				array[i] 		= array[i+1];
+				array[i+1] 	= _temp;	
+				noswap=false;
+			}
+			
+			if(comparator(array[i], array[pivot]) < 0){
+				_temp 			= array[i];
+				array[i] 		= array[_index];
+				array[_index] 	= _temp;
+				_index++;
+			}	
+			
+		}
+		
+			_temp 			= array[_index];
+			array[_index]	= array[pivot];
+			array[pivot] 	= _temp;
+			
+		if(noswap /*_index === startIndex */){
+		return;
+		}
+		
+		_sort(array, startIndex, _index - 1, comparator);
+		_sort(array, _index + 1, endIndex  , comparator);
+		
+		return array;
+	}
+	
+	
+	var getComparator = function(options){
+		var multiplier=(options.desc?-1:1);
+		if(typeof options === 'undefined'){
+			return _defaultComparator.bind({multiplier:multiplier});
+		}
+		if(options.comparator){
+			return options.comparator.bind({multiplier:multiplier});
+		}
+		
+		if(options.field){
+			if(!options.dataType || options.dataType === 'number'){
+				return _getNumberComparatorForField(options.field, multiplier);
+			}else  if(options.dataType === 'boolean'){
+				return _getBooleanComparatorForField(options.field, multiplier);
+			}else{
+				return _getStringComparatorForField(options.field, multiplier);
+			}			
+		}else{
+			if(!options.dataType || options.dataType === 'number'){
+				return _defaultComparator.bind({multiplier:multiplier});
+			}else  if(options.dataType === 'boolean'){
+				return _defaultBooleanComparator.bind({multiplier:multiplier});
+			}else{
+				return _defaultStringComparator.bind({multiplier:multiplier});
+			}
+		}
+		
+		
+	}
+
+
+	var getSortIndexArrayForGroupByField = function(array, field){
+		var startIndex=0, arr=[];
+		var currentObj=array[0][field];
+		for(var i=0;i<array.length;++i){
+			if(currentObj !== array[i][field]){
+				arr.push({
+					startIndex: startIndex,
+					endIndex: i-1
+				});
+				startIndex = i;
+				currentObj = array[i][field];
+			}
+		}
+		arr.push({
+			startIndex: startIndex,
+			endIndex: array.length-1
+		});
+				
+		return arr;
+	}
+	
+	var quickSort = function(array, comparator, options){
+	
+		if(comparator && typeof comparator !== 'function'){
+			options = comparator;
+			comparator=null;
+		}		
+		options = options || {};
+		
+		if(options.constructor === Array){
+			quickSort(array, comparator, options[0]);
+			
+			for(var i=1;i<options.length;++i){
+				
+				var _indexArr = getSortIndexArrayForGroupByField(array, options[i-1].field);
+				for(var j=0; j<_indexArr.length; ++j){
+					options[i].startIndex = _indexArr[j].startIndex;
+					options[i].endIndex = _indexArr[j].endIndex;
+					quickSort(array, comparator, options[i]);
+				}
+			}
+			
+			return array;
+		}
+		
+		comparator = getComparator(options);
+		
+		return _sort(array, (options.startIndex || 0), (options.endIndex || array.length-1), comparator);
+		
+	}
+
+	IUI.registerUtil('quickSort', quickSort);
+	
+
+});
+(function (factory) {
+   if(typeof define === "function" && define.amd) {    
 	define('Row',['IUI-core','Container'],factory);
 	
   } else {
@@ -1732,7 +1971,7 @@
 		_attachEvents: function(){
 			var that=this;
 			IUI.uiContainers.PopOver.prototype._attachEvents.apply(this,arguments);	
-			debugger;
+			
 			$(this.options.container).on('mousedown',function(e){
 				
 				that.popup.closeImmediate(e);
@@ -1841,6 +2080,293 @@
 });
 (function (factory) {
    if(typeof define === "function" && define.amd) {    
+	define('View',['IUI-core','ContainerUI'],factory);
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){
+
+	var viewPromiseMap = {
+		
+	}
+
+	var viewContexts = {
+		default:{
+			view: {},
+			viewport: {}
+		}
+	}
+	
+	var View = IUI.ContainerUI.extend({
+		name:'View',
+		events: IUI.ContainerUI.prototype.events.concat(['render','append']),
+		initialize: function(options){
+			this._uid=IUI.getUID();
+			$(options.element).removeAttr('viewmodel').removeAttr('name');
+			this.template = '<container'+options.element.outerHTML.slice(5,-5)+'container>';
+			if(options.name){
+				viewContexts[options.context || this.options.context].view[options.name]=this;
+			}			
+			this.name = options.name;
+			IUI.ContainerUI.prototype.initialize.apply(this,arguments);	
+			this.makeUI();
+			this.bindModels();
+		},	
+		options:{
+			context: 'default'
+		},
+		_honorViewPromise: function(){
+			var _name = IUI.View.getName(this);
+			if(viewPromiseMap[_name]){
+				IUI.View.renderViewInViewport(this, viewPromiseMap[_name]);
+				delete viewPromiseMap[_name];
+			}
+		},
+		_handleviewmodelChange:function(value){
+			if(!this.bound && typeof value === 'string'){
+				IUI.ViewModel.bindView(value, this);
+				this.bound=true;
+			}else if(typeof value == 'object'){
+				this._modelReady = true;
+				this._honorViewPromise();
+			}
+		},
+		render:function(){
+			this.container=IUI.makeUI(this.template, this.options.viewmodel);
+			this.$el=this.container.$element;
+			this.trigger('render');
+		},
+		bindModels: function(){
+			IUI.ContainerUI.prototype.bindModels.apply(this,arguments);
+			if(typeof this.options.viewmodel === 'undefined'){
+				typeof this.options.viewmodel == this.options.model;
+				this._modelReady = true;
+				this._honorViewPromise();
+			}if(typeof this.options.viewmodel == 'string'){
+				if(this.options.viewmodel.match(IUI._observableRegex)){
+					return;
+				}else if(!this.bound){
+					IUI.ViewModel.bindView(this.options.viewmodel, this);
+					this.bound=true;
+				}
+			}else if(typeof this.options.viewmodel == 'object'){
+				this._modelReady = true;
+				this._honorViewPromise();
+			}
+		},
+		_bindViewModel: function(model){
+			
+			this.options.viewmodel = model;
+			this._modelReady = true;
+			this._honorViewPromise();
+		},
+		makeUI: function(){
+			this.element.outerHTML='<span class="ghost-span"></span>';
+			this.element=null;
+		},
+		
+	});
+	
+
+	IUI.View = function(){
+		
+	}
+	
+	IUI.View.getView = function(viewName){
+		if(typeof viewName === 'object'){
+			if(viewName.constructor === View){
+					return viewName;
+			}else{
+				return;
+			}			
+		}
+		
+		var _name=viewName.split(':'),
+			name = _name[0],
+			context = _name[1];
+			
+		return viewContexts[context || 'default'].view[name];	
+	}
+	IUI.View.getViewport = function(viewportName){
+		
+		if(typeof viewportName === 'object'){
+			if(viewportName.constructor === IUI.uiContainers.Viewport){
+				return viewportName;
+			}else{
+				return;
+			}
+		}
+		
+		var _name=viewportName.split(':'),
+			name = _name[0],
+			context = _name[1];
+			
+		return viewContexts[context || 'default'].viewport[name];	
+	}
+	
+	IUI.View.registerViewport = function(viewport){
+		var context = viewport.options.context,
+			name = viewport.options.name;
+			
+		if(name){
+			viewContexts[context].viewport[name]=viewport;	
+		}
+	}
+	
+	IUI.View.getName = function(view){
+		if(view.options.name){
+			return view.options.name + ':' +view.options.context;
+		}else{
+			return _view._uid;
+		}
+	}
+	
+	
+	IUI.View.renderViewInViewport = function(view , viewport){
+		_view = IUI.View.getView(view);
+		_viewport = IUI.View.getViewport(viewport);
+		if(_view && _view._modelReady){
+			if(!_view.$el){
+				_view.render();
+			}
+			if(_viewport)
+			_viewport.$element.append(_view.$el);
+			_viewport._currentView=_view;
+			_view.trigger('append');
+		}else if(_view){
+			viewPromiseMap[IUI.View.getName(_view)] = viewport;
+		}else{
+			if(typeof view === 'string'){
+				var _name=view.split(':'),
+					name = _name[0],
+					context = _name[1] || 'default';
+				}
+			viewPromiseMap[name+':'+context] = viewport;
+		}
+		
+	}
+	
+	
+	
+	
+	IUI.WidgetBuilder.plugin(View);
+
+});
+(function (factory) {
+   if(typeof define === "function" && define.amd) {    
+	define('Exhibit',['IUI-core','Container'],factory);
+	
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){
+
+	var Exhibit=IUI.uiContainers.Container.extend({
+		name:'Exhibit',
+		classList: IUI.uiContainers.Container.prototype.classList.concat(['i-ui-exhibit'])
+	});
+	
+	IUI.WidgetBuilder.plugin(Exhibit);
+
+
+});
+(function (factory) {
+  if(typeof define === "function" && define.amd) {    
+	define('Viewport',['IUI-core','Exhibit', 'View'],factory);
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){
+
+
+
+	var Viewport = IUI.uiContainers.Exhibit.extend({
+		name: 'Viewport',
+		classList: IUI.uiContainers.Exhibit.prototype.events.concat(['i-ui-Viewport']),
+		options:{
+			context : 'default',
+			destroyViews : false
+		},
+		initialize: function(options){
+			IUI.uiContainers.Exhibit.prototype.initialize.apply(this, arguments);
+			IUI.View.registerViewport(this);
+			this.oldViews={};
+			if(this.options.defaultview){
+				IUI.View.renderViewInViewport(this.options.defaultview, this);
+			}
+		}
+
+	});
+	
+
+	
+	IUI.WidgetBuilder.plugin(Viewport);
+
+
+});
+(function (factory) {
+   if(typeof define === "function" && define.amd) {    
+	define('ViewModel',['IUI-core','DataItem','Validator'],factory);
+	
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){
+
+	var bindViewModel=function(viewModel){
+		var name=viewModel.name;
+		if(ViewModel._viewBindings[name] && ViewModel._viewBindings[name].length){
+			var length=ViewModel._viewBindings[name].length;
+			for(var i=0;i<length;++i){
+				ViewModel._viewBindings[name][i](viewModel.model);
+			}
+			if(viewModel.persist){
+				ViewModel._modelBindings[name]=viewModel;
+				ViewModel._viewBindings[name]=[];
+			}else{
+				delete ViewModel._viewBindings[name];
+			}
+		}else{
+			ViewModel._modelBindings[name]=viewModel;
+		}
+	}
+	
+	var ViewModel=IUI.Class.extend({
+		classType: 'ViewModel',
+		options:{
+			persist: true
+		},
+		initialize: function(options){
+			this.persist=options.persist;
+			this.name=options.name;
+			this.model=options.model;
+			bindViewModel(this);
+		}
+	});
+	
+	ViewModel.bindView=function(name,view){
+		
+		if(ViewModel._modelBindings[name]){
+			view._bindViewModel(ViewModel._modelBindings[name].model);
+			if(!ViewModel._modelBindings[name].persist){
+				delete ViewModel._modelBindings[name];
+			}
+		}else{
+			if(!ViewModel._viewBindings[name]){
+				ViewModel._viewBindings[name]=[]
+			}
+			ViewModel._viewBindings[name].push(view._bindViewModel.bind(view));		
+		}
+	}
+	
+	ViewModel._modelBindings={};
+	
+	ViewModel._viewBindings={};
+
+	IUI.ViewModel=ViewModel;
+});
+(function (factory) {
+   if(typeof define === "function" && define.amd) {    
 	define('Sidebar',['IUI-core','Container','Layout'],factory);
 	
   } else {
@@ -1891,14 +2417,39 @@
 		name:'Grid',
 		tagName: 'table',		
 		classList: ['i-ui-grid'],
+		options:{
+			sortable: false
+		},
+		load: function(options){
+			options.sortable=options.sortable === 'true';
+		},
+		_getHeaderTemplate: function(elem){
+			var headerPrefix='',
+				headerSufix='',
+				headerTag='HeaderCell',
+				classList=['i-ui-grid-header'];
+				
+			if((elem.attributes.sortable?(elem.attributes.sortable.value === 'true'):this.options.sortable)){
+				headerTag='ContainerHeaderCell';
+				headerSufix='</division><div class="i-ui-sort-icon-container"><i class="sort-arrow-desc fa fa-arrow-up"></i><i class="sort-arrow-asc fa fa-arrow-down"></div></i>'
+				headerPrefix='<division>'
+				classList.push('i-ui-sortable');
+			}
+			return '<'+headerTag+' '+(elem.attributes.field?('field=\''+elem.attributes.field.value+'\''):'')+' class=\''+classList.join(' ')+'\'>'+headerPrefix+(elem.attributes.title?elem.attributes.title.value:'')+headerSufix+'</'+headerTag+'>';
+		},
 		_extractRowTemplate: function(){
 			var columns=this.element.getElementsByTagName('column'),
-				headerTemplate = '<row class="i=ui-grid-thead">',
-				rowTemplate = '<row class="i=ui-grid-tbody">';
-						
+				headerTemplate = '<row class="i-ui-grid-thead">',
+				rowTemplate = '<row class="i-ui-grid-tbody">',
+				that=this;
+
 			Array.prototype.slice.call(columns).forEach(function(elem){
-				headerTemplate = headerTemplate+'<HeaderCell class=\'i-ui-grid-header\'>'+(elem.attributes.title?elem.attributes.title.value:'')+'</HeaderCell>';
-				rowTemplate = rowTemplate+elem.outerHTML.replace(/title="(.*?)"/g,'').replace(/column/g,'ContainerCell');
+				headerTemplate = headerTemplate+that._getHeaderTemplate(elem);
+				if(elem.innerHTML.indexOf('<')!==0){
+					rowTemplate = rowTemplate+elem.outerHTML.replace(/title="(.*?)"/g,'').replace(/column/g,'Cell');
+				}else{
+					rowTemplate = rowTemplate+elem.outerHTML.replace(/title="(.*?)"/g,'').replace(/column/g,'ContainerCell');
+				}
 				elem.outerHTML='';
 			});
 			this.headerTemplate = headerTemplate + '</row>'
@@ -1908,19 +2459,81 @@
 		onDataFetch: function(dataObject){
 			var _length=dataObject.data.length;
 				items=[];
-			this._header=IUI.makeUI(this.headerTemplate,this.options.model);
+			this._header=this._header || IUI.makeUI(this.headerTemplate,this.options.model);
 			this.$element.append(this._header.$element);
 			for(var i=0;i<_length;++i){
-				var _item=IUI.makeUI(this.rowTemplate,dataObject.data[i]);
+				var _item=dataObject.data[i].__items || IUI.makeUI(this.rowTemplate,dataObject.data[i]);
+				dataObject.data[i].__items = _item;
 				this.$element.append(_item.$element);
 				items.push(_item);
 			}
 			this.items=items;
 		},
+		onDataChange: function(dataObject){
+			
+			if(dataObject.type==="add"){
+				var _item=dataObject.item.__items || IUI.makeUI(this.rowTemplate,dataObject.item);
+				if(typeof dataObject.index ==='undefined'){
+					dataObject.item.__items = _item;
+					this.$element.append(_item.$element);
+					this.items.push(_item);
+				}else{
+					this.$element.children().eq(dataObject.index).after(_item.$element);
+					this.items.splice(dataObject.index,0,_item);	
+				}
+			}else if(dataObject.type==="remove"){
+				this.$element.children().eq(dataObject.index).remove();				
+			}else{
+				this.$element.children().detach();
+				this.onDataFetch(dataObject);
+			}
+		},
 		makeUI: function(){
 			this._extractRowTemplate();
 			IUI.uiContainers.DataBoundContainer.prototype.makeUI.apply(this,arguments);
 		},
+		sort: function(sortObject){
+			if(this.dataMart){
+				console.time('sort');
+				this.dataMart.sort(sortObject);
+				console.timeEnd('sort');
+				this._sortObject=sortObject;
+			}
+		},
+		_handleSortClick: function(e){
+			
+				this._sortObject=this._sortObject || [];
+			var sortDesc;
+			
+			if($(e.target).hasClass('sort-arrow-desc')){
+				sortDesc=true;
+			}else if($(e.target).hasClass('sort-arrow-asc')){
+				sortDesc=false;
+			}
+
+			var _field=$(e.currentTarget).closest('th').data('field');
+
+			if(e.currentTarget.sortDesc==sortDesc){	
+				this._sortObject.splice(this._sortObject.indexOf(e.currentTarget.sortObject),1);
+				e.currentTarget.sortObject=null;
+				e.currentTarget.sortDesc=null;	
+			}else{
+				e.currentTarget.sortDesc=sortDesc;
+				e.currentTarget.sortObject = e.currentTarget.sortObject || this._sortObject[this._sortObject.push({field:_field}) - 1];
+				e.currentTarget.sortObject.desc=sortDesc;
+			}
+			
+			this.sort(this._sortObject.slice());			
+			
+			
+		},
+		_attachEvents: function(){
+			IUI.uiContainers.DataBoundContainer.prototype._attachEvents.apply(this,arguments);
+			if(this.options.sortable){
+				this.$element.on('click','.i-ui-sort-icon-container',this._handleSortClick.bind(this))
+			}
+		}
+		
 	});
 	
 	IUI.WidgetBuilder.plugin(Grid);
@@ -2300,7 +2913,6 @@
 		tagName: 'TD',
 		classList: ['i-ui-cell'],
 		_processOptions: function(wrapper){
-			debugger;
 			this.options.value=(this.element && this.element.innerHTML) || this.options.template || (this.options.field?'::'+this.options.field+'::':(new Error('No Field Value to bind with')));
 			wrapper.innerHTML=this.options.value;
 			delete this.options.text;
@@ -2389,6 +3001,29 @@
 });
 (function (factory) {
    if(typeof define === "function" && define.amd) {    
+	define('ContainerHeaderCell',['IUI-core','Container','Cell'],factory);
+	
+  } else {
+    factory(window.IUI);
+  }
+})(function(IUI){	
+	
+	var ContainerHeaderCell=IUI.uiContainers.Container.extend({
+		name:'ContainerHeaderCell',
+		tagName: 'TH',
+		classList: IUI.uiWidgets.Cell.prototype.classList.concat(['i-ui-header-cell']),
+		makeUI: function(){
+			IUI.uiContainers.Container.prototype.makeUI.apply(this,arguments);
+			this.$element.data('field', this.options.field);
+		}
+	});
+	
+	IUI.WidgetBuilder.plugin(ContainerHeaderCell);
+
+
+});
+(function (factory) {
+   if(typeof define === "function" && define.amd) {    
 	define('ListView',['IUI-core','Widget'],factory);
 	
   } else {
@@ -2400,25 +3035,6 @@
 		name:'ListView',
 		classList: IUI.Widget.prototype.classList.concat(['i-ui-listview']),
 		ignoredAttributes: ['template'],
-		initialize: function(options){
-			IUI.Widget.prototype.initialize.apply(this,arguments);	
-			this._attachEvents();
-		},
-		_attachEvents: function(){
-			if(JSON.parse(this.options.selectable) === true){
-				var $el=this.$element;
-				$el.on('click','.i-ui-list-item', function(e){
-					
-					if($(e.currentTarget).hasClass('i-ui-selected')){
-						$(e.currentTarget).removeClass('i-ui-selected');
-					}else{
-						$el.find('.i-ui-selected').removeClass('i-ui-selected')
-						$(e.currentTarget).toggleClass('i-ui-selected');
-					}
-					
-				});
-			}
-		},
 		onDataFetch:function(dataObject){
 			var _length=dataObject.data.length;
 				items=[];
@@ -2432,7 +3048,7 @@
 		},
 		
 		onDataChange: function(dataObject){
-			debugger;
+			
 			if(dataObject.type==="add"){
 				var _item=IUI.makeUI(this.options.template,dataObject.item);
 				if(typeof dataObject.index ==='undefined'){
@@ -2444,6 +3060,9 @@
 				}
 			}else if(dataObject.type==="remove"){
 				this.$element.children().eq(dataObject.index).remove();				
+			}else{
+				this.$element.children().detach();
+				this.onDataFetch(dataObject);
 			}
 		},
 		_processOptions: function(wrapper){
@@ -2454,8 +3073,7 @@
 			IUI.Widget.prototype._processOptions.apply(this,arguments);		
 		},
 		options:{
-			text: '',
-			selectable: false
+			text: ''
 		},
 		_handlevalueChange: function(value){
 			this.value(value);
@@ -3004,24 +3622,6 @@
 });
 (function (factory) {
    if(typeof define === "function" && define.amd) {    
-	define('Exhibit',['IUI-core','Container'],factory);
-	
-  } else {
-    factory(window.IUI);
-  }
-})(function(IUI){
-
-	var Exhibit=IUI.uiContainers.Container.extend({
-		name:'Exhibit',
-		classList: IUI.uiContainers.Container.prototype.classList.concat(['i-ui-exhibit'])
-	});
-	
-	IUI.WidgetBuilder.plugin(Exhibit);
-
-
-});
-(function (factory) {
-   if(typeof define === "function" && define.amd) {    
 	define('Form',['IUI-core','Container'],factory);
 	
   } else {
@@ -3148,15 +3748,20 @@
 		'WidgetBuilder',	
 		'Validator',
 		'ObservableModel',
+		'Utils',
 		'OptionModel',
 		'ContainerModel',
 		'DataBoundContainer',
 		'Container',
 		'VerticalScroller',
+		'QuickSort',
 		'Row',
 		'Popover',
 		'ContextMenu',
 		'Layout',
+		'View',
+		'Viewport',
+		'ViewModel',
 		'Sidebar',
 		'Grid',
 		'Navbar',
@@ -3170,6 +3775,7 @@
 		'Division',
 		'HeaderCell',
 		'ContainerCell',
+		'ContainerHeaderCell',
 		'ListView',
 		'Switch',
 		'Slider',
