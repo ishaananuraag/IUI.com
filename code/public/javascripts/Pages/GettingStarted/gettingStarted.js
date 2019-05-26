@@ -1,0 +1,1 @@
+define(['IUI','text!./gettingStartedTemplate.html'],function(IUI,template){

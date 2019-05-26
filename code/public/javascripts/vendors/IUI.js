@@ -68,6 +68,7 @@
 			for(var a in _bindings){
 				_bindings[a](eventGroup.events);
 			}
+			delete EventGroup._classBindings[name];
 			if(eventGroup.persist){
 				EventGroup._eventBindings[name]=eventGroup;
 			}
@@ -304,6 +305,12 @@
 		}
 	}
 	
+	IUIClass.prototype.destroy=function(boundOptions){
+		if(this.options.model){
+				IUI.ObservableModel.unbindModels(this.optionsModel,this.options.model,this._optionModelMapping);
+		}
+	}
+	
 	IUIClass.prototype.__processOptionMapping=function(){
 		var _mappings=IUI.behaviors.getObservableMapping(this.options),
 			length=_mappings.length;
@@ -473,6 +480,7 @@
 			if(typeof object[attr] === "string"){	
 					var templateObject=IUI.Template.extractTemplateObject(object[attr]);
 					if(templateObject.mappings){
+						templateObject._uid=IUI.getUID();
 						templateObject.optionAttribute=attr;
 						//console.log(templateObject)
 						_matchedObservers.push(templateObject);
@@ -561,7 +569,20 @@
 		}
 	}
 	
+	WidgetBuilder.alias=function xalias(existingWidget, newName){
+		existingWidget = String(existingWidget).toUpperCase();
+		newName = String(newName).toUpperCase();
 		
+		if(WidgetBuilder.containerList[existingWidget]){
+			WidgetBuilder.containerList[newName]=WidgetBuilder.containerList[existingWidget]
+		}else if(WidgetBuilder.widgetList[existingWidget]){
+			WidgetBuilder.widgetList[newName]=WidgetBuilder.widgetList[existingWidget]
+		}else{
+			throw new Error(existingWidget+' Not Found');
+		}
+	}
+
+	
 	IUI.WidgetBuilder=WidgetBuilder;
 	
 /* ------- END : IUI.WidgetBuilder.js -----------*/
@@ -661,7 +682,7 @@
 		initialize: function(options){
 			IUI.Class.prototype.initialize.apply(this,arguments);		
 			this.persist=this.options.persist;
-			this.name=this.options.name;
+			this.name=this.options.name || IUI.getUID();
 			this._validateSchema();
 			if(this.options.autofetch){
 				this.fetch();
@@ -780,12 +801,20 @@
 			
 			return _data;
 		},
+		setData: function(data){
+			if(this.state.fetched){
+				var _data =this._processData(data);
+				this.trigger('change',{data:_data});
+				this.data=_data;							
+			}else{
+				this.data=data;
+			}
+		},
 		fetch: function(data){
 			this.data=this._processData(data || this.data || this.options.data);				
 			this.state.fetched=true;
 			this.trigger('fetch',{data:this.data});
-		}
-		
+		}		
 		
 	});
 	
@@ -845,15 +874,41 @@
 		},
 		initialize: function(options){
 			IUI.Class.prototype.initialize.apply(this,arguments);	
-			
+			if(this.options.renderif && Object.keys(this.options.model).indexOf(this.options.renderif) === -1){
+				$(this.options.element).replaceWith('<span class="ghost-span">');
+				return;
+			}
 			this.$element=$(this.options.element)
 			this.element=this.$element[0];
 			this.makeUI();	
 			if(this.options.datamart){
 				IUI.DataMart.bindWidget(this.options.datamart,this);
+			}else if(this.options.data){
+				this._processModelData();
 			}
 			this.bindModels(this.boundModelOptions);
 			this.onInitialize();	
+		},
+		_handledataChange: function(){
+				this._processModelData();
+		},
+		_processModelData: function(){
+			if(typeof this.options.data === 'string'){
+				return;
+			}else 
+				if(typeof this.options.data === 'object'){
+					if(!this.dataMart){
+						var dataMart = new IUI.DataMart({
+							idField : this.options.idField,
+							textField : this.options.textField,
+							data : this.options.data,
+							autofetch: true
+						});
+						IUI.DataMart.bindWidget(dataMart.name,this);
+					}else{
+						this.dataMart.setData(this.options.data);
+					}
+				}			
 		},
 		_handleOptionChange:function(key,value){
 			if(key in this.element.style){
@@ -947,6 +1002,7 @@
 			if(IUI.domAccessibility){
 				this.element.iuiWidget=this;
 			}
+			this.element.onDOMAppend = this.onDOMAppend;
 			this.$element=$(wrapper);
 			this.onRender();
 		},
@@ -1090,41 +1146,41 @@
 			this._data=_data;
 			this.handler=handler;
 			
-			
+			var that=this;
 			this.model=model || {};
-			for(var key in model){
+			Object.keys(model).forEach(function(key){
 				if(list && (list.indexOf(key)===-1)){
-					continue;
-				}else if(typeof this.model[key] === 'function'){
-					continue;
+					return;
+				}else if(typeof that.model[key] === 'function'){
+					return;
 				}
 				
-				Object.defineProperty(this._data,key,{
-					value: this.model[key],
+				Object.defineProperty(that._data,key,{
+					value: that.model[key],
 					writable: true
     			});
 				
-				Object.defineProperty(this.model,key,{	
-					set: (function(key){
-						return function(value){
+				Object.defineProperty(that.model,key,{	
+					set: function(value){
 							var valid=validator(value);
 							if(_data[key]!==value && valid.valid){
 								_data[key]=value;
 								_handleChange(key,value);
 							}
-						}
-					})(key),
-					get: (function(key){
-						return function(){
+						},
+					get: function(){
 							return _data[key];
 						}
-					})(key)
 				});
-			}
+			});
+	
 		},
 		
 		_handleChange: function(key,value,sender){
-			(this.handler) && (this.handler(key,value,sender));
+			var that=this;
+			setTimeout(function(){
+				(that.handler) && (that.handler(key,value,sender));
+			})
 		}
 	});
 	
@@ -1132,6 +1188,11 @@
 	ObservableModel.bindModels=function bindModels(optionsModel, containerModel,mappingArray){
 		optionsModel.bindConainerModel(containerModel,mappingArray);
 		containerModel.bindOptionModel(optionsModel,mappingArray);
+	}
+		
+	ObservableModel.unbindModels=function bindModels(optionsModel, containerModel,mappingArray){
+		optionsModel.unbindConainerModel(containerModel,mappingArray);
+		containerModel.unbindOptionModel(optionsModel,mappingArray);
 	}
 	
 	
@@ -1189,6 +1250,29 @@
 				}			
 			}
 		},
+		unbindConainerModel: function(optionModel,mappingArray){
+			var length = mappingArray.length, keys;
+			var uids={
+				
+			};
+			for(var i=0;i<length;++i){
+				(uids[mappingArray[i].optionAttribute]) || (uids[mappingArray[i].optionAttribute] =[])
+				uids[mappingArray[i].optionAttribute].push( mappingArray[i]._uid);
+			}
+			keys=Object.keys(uids)
+			for(var i in keys){
+				
+				this.boundModels[keys[i]]=this.boundModels[keys[i]].filter(function(elem){
+					if(uids[keys[i]].indexOf(elem._uid) !== -1){
+						return false;
+					}
+					return true;
+				});	
+				
+				
+			}
+				
+		},
 		bindConainerModel: function(containerModel,mappingArray){
 			var mapping,options,length=mappingArray.length;
 			(this.boundModels) || (this.boundModels={});
@@ -1196,7 +1280,8 @@
 				var obj={
 					model: containerModel,
 					mappedAttributes:[],
-					isExclusive:mappingArray[i].isExclusive 
+					isExclusive:mappingArray[i].isExclusive,
+					_uid: mappingArray[i]._uid
 				}
 				mapping=mappingArray[i].mappings;
 				for(var maps in mapping){
@@ -1244,6 +1329,19 @@
 				}			
 			}
 		},
+		unbindOptionModel: function(optionModel,mappingArray){
+			var length = mappingArray.length;
+			var uids=[];
+			for(var i=0;i<length;++i){
+				uids.push( mappingArray[i]._uid);
+			}
+			this.boundModels=this.boundModels.filter(function(elem){
+				if(uids.indexOf(elem._uid) !== -1){
+					return false;
+				}
+				return true;
+			});		
+		},
 		bindOptionModel: function(optionModel,mappingArray){
 			var mapping,options,length=mappingArray.length;
 			(this.boundModels) || (this.boundModels=[]);
@@ -1251,7 +1349,8 @@
 				var obj={
 					model: optionModel,
 					optionAttribute:mappingArray[i].optionAttribute,
-					template:mappingArray[i].template
+					template:mappingArray[i].template,
+					_uid: mappingArray[i]._uid
 				}
 				mapping=mappingArray[i].mappings;
 				this.boundModels.push(obj);		
@@ -1303,6 +1402,10 @@
 			this.widgets=[];
 			this.containers=[];			
 			IUI.Class.prototype.initialize.apply(this,arguments);
+			if(this.options.renderif && Object.keys(this.options.model.model).indexOf(this.options.renderif) === -1){
+				$(this.options.element).replaceWith('<span class="ghost-span">');
+				return;
+			}
 			if(this.options.async){
 				this._create=this._createAsync;
 			}			
@@ -1408,12 +1511,15 @@
 			var args=Array.prototype.slice.call(arguments,1);
 			for(var c in this.containers){
 				var container=this.containers[c];
-				container[command].apply(container,args);
+				(container[command]) && (container[command].apply(container,args));
 			}
 			for(var w in this.widgets){
 				var widget=this.widgets[w];
-				widget[command].apply(widget,args);
+				(widget[command]) && (widget[command].apply(widget,args));
 			}
+		},
+		destroy: function(val){
+			this._itterateCommandToAllComponents('destroy');
 		},
 		enable: function(val){
 			this._itterateCommandToAllComponents('enable',val);
@@ -1450,6 +1556,7 @@
 			if(IUI.domAccessibility){
 				this.element.uiContainer=this;
 			}
+			this.element.onDOMAppend = this.onDOMAppend;
 		},
 		_findAndMakeWidgets:function(){
 			this.widgets=[];
@@ -2053,9 +2160,10 @@
 			if(IUI.domAccessibility){
 				this.element.uiContainer=this;
 			}
+			this.element.onDOMAppend = this.onDOMAppend;
 		},
 		_appendSubContainer: function(){
-			this.$element.after(this.subcontainer);
+			this.$element.before(this.subcontainer);
 		},
 		getContainerById: function(id){
 			var container=IUI.ContainerUI.prototype.getContainerById.apply(this,arguments);	
@@ -2102,15 +2210,27 @@
 		events: IUI.ContainerUI.prototype.events.concat(['render','append']),
 		initialize: function(options){
 			this._uid=IUI.getUID();
-			$(options.element).removeAttr('viewmodel').removeAttr('name');
-			this.template = '<container'+options.element.outerHTML.slice(5,-5)+'container>';
+			$(options.element).removeAttr('viewmodel').removeAttr('name').removeAttr('datamart').removeAttr('eventgroup')
+				.addClass('i-ui-exhibit');
 			if(options.name){
 				viewContexts[options.context || this.options.context].view[options.name]=this;
-			}			
+			}	
 			this.name = options.name;
-			IUI.ContainerUI.prototype.initialize.apply(this,arguments);	
-			this.makeUI();
-			this.bindModels();
+			if(options.templateurl){
+				var that=this, _arguments=arguments;
+				var _clone = $(options.element).clone().empty();
+				_clone.load(options.templateurl, function(){
+					that.template = '<container'+_clone[0].outerHTML.slice(5,-5)+'container>'
+					IUI.ContainerUI.prototype.initialize.apply(that,_arguments);	
+					that.makeUI();
+					that.bindModels();
+				});
+			}else{
+				this.template = '<container'+options.element.outerHTML.slice(5,-5)+'container>';
+				IUI.ContainerUI.prototype.initialize.apply(this,arguments);	
+				this.makeUI();
+				this.bindModels();
+			}
 		},	
 		options:{
 			context: 'default'
@@ -2139,7 +2259,7 @@
 		bindModels: function(){
 			IUI.ContainerUI.prototype.bindModels.apply(this,arguments);
 			if(typeof this.options.viewmodel === 'undefined'){
-				typeof this.options.viewmodel == this.options.model;
+				this.options.viewmodel = this.options.model;
 				this._modelReady = true;
 				this._honorViewPromise();
 			}if(typeof this.options.viewmodel == 'string'){
@@ -2164,12 +2284,28 @@
 			this.element.outerHTML='<span class="ghost-span"></span>';
 			this.element=null;
 		},
+		destroy: function(){
+			this.container.destroy();
+			this.container.$element.remove();
+			this.container=null;
+			this.$el=null;
+			this.bound=false;
+		}
 		
 	});
 	
-
-	IUI.View = function(){
-		
+	
+	IUI.View = function(options){
+		this._initialize(options);
+	}
+	
+	IUI.View.prototype._initialize = function(options){
+		this.template = options.template;
+	}
+	
+	
+	IUI.View.prototype._initialize = function(options){
+		this.template = options.template;
 	}
 	
 	IUI.View.getView = function(viewName){
@@ -2217,7 +2353,7 @@
 		if(view.options.name){
 			return view.options.name + ':' +view.options.context;
 		}else{
-			return _view._uid;
+			return view._uid;
 		}
 	}
 	
@@ -2229,10 +2365,12 @@
 			if(!_view.$el){
 				_view.render();
 			}
-			if(_viewport)
-			_viewport.$element.append(_view.$el);
-			_viewport._currentView=_view;
-			_view.trigger('append');
+			if(_viewport){
+				_viewport.$element.children().detach();
+				_viewport.$element.append(_view.$el);
+				_viewport._currentView=_view;
+				_view.trigger('append');
+			}
 		}else if(_view){
 			viewPromiseMap[IUI.View.getName(_view)] = viewport;
 		}else{
@@ -2282,7 +2420,7 @@
 
 	var Viewport = IUI.uiContainers.Exhibit.extend({
 		name: 'Viewport',
-		classList: IUI.uiContainers.Exhibit.prototype.events.concat(['i-ui-Viewport']),
+		classList: IUI.uiContainers.Exhibit.prototype.classList.concat(['i-ui-Viewport']),
 		options:{
 			context : 'default',
 			destroyViews : false
@@ -2376,27 +2514,29 @@
 
 	var Sidebar=IUI.uiContainers.Layout.extend({
 		name:'Sidebar',
-		classList: IUI.uiContainers.Container.prototype.classList.concat(['i-ui-sidebar']),
+		classList: IUI.uiContainers.Layout.prototype.classList.concat(['i-ui-sidebar']),
 		subContainerClassList: IUI.uiContainers.Layout.prototype.subContainerClassList.concat(['i-ui-sidebar-subcontainer']),
 		_observedOptions:['width'],
+		initialize: function(options){
+			if($(options.element).index() === ($(options.container).children().length -1 ) ){
+				this.options.position = 'right';
+			}
+			IUI.uiContainers.Layout.prototype.initialize.apply(this, arguments);
+			
+		},
 		options: {
 			width: '10em',
 			position: 'left'
 		},
 		_handlewidthChange:function(value){
-			this.subcontainer.style.width='calc( 100% - '+value+')';
+			$(this.subcontainer).css('padding-'+this.options.position,value);
 		},
 		_appendSubContainer: function(){
-			if(this.options.position==="left"){			
-				this.$element.after(this.subcontainer);
-			}else if(this.options.position==="right"){
-				this.$element.before(this.subcontainer);
-			}else{
-				throw new Error('Wrongly positioned sidebar');
-			}
+			this.$element.before(this.subcontainer);
+			this.$element.addClass('i-ui-'+this.options.position+'-sidebar')
 		},
 		processSubcontainer:function(subcontainer){
-			subcontainer.style.width='calc( 100% - '+this.options.width+')';
+			$(subcontainer).css('padding-'+this.options.position,this.options.width);
 		}
 	});
 	
@@ -2406,7 +2546,7 @@
 });
 (function (factory) {
    if(typeof define === "function" && define.amd) {    
-	define('Grid',['IUI-core','Container'],factory);
+	define('Grid',['IUI-core','DataBoundContainer'],factory);
 	
   } else {
     factory(window.IUI);
@@ -2551,21 +2691,19 @@
 
 	var Navbar=IUI.uiContainers.Layout.extend({
 		name:'Navbar',
-		classList: IUI.uiContainers.Container.prototype.classList.concat(['i-ui-navbar']),
+		classList: IUI.uiContainers.Layout.prototype.classList.concat(['i-ui-navbar']),
 		subContainerClassList: IUI.uiContainers.Layout.prototype.subContainerClassList.concat(['i-ui-navbar-subcontainer']),
-		_observedOptions:['height'],
-		options: {
-		},
+		_observedOptions: ['height'],
 		_handleheightChange:function(value){
-			this.subcontainer.style.height='calc( 100% - '+value+')';
+			$(this.subcontainer).css('padding-top',value);
 		},
 		processSubcontainer:function(subcontainer){
-			subcontainer.style.height='calc( 100% - '+(this.options.height || '0px')+')';
+			$(subcontainer).css('padding-top',this.options.height);
 		}
 	});
 	
 	IUI.WidgetBuilder.plugin(Navbar);
-
+	IUI.WidgetBuilder.alias('Navbar','Header')
 
 });
 (function (factory) {
@@ -2577,14 +2715,20 @@
   }
 })(function(IUI){
 
-	var Footer=IUI.uiContainers.Navbar.extend({
+
+	var Footer=IUI.uiContainers.Layout.extend({
 		name:'Footer',
-		classList: IUI.uiContainers.Container.prototype.classList.concat(['i-ui-footer']),
+		classList: IUI.uiContainers.Layout.prototype.classList.concat(['i-ui-footer']),
 		subContainerClassList: IUI.uiContainers.Layout.prototype.subContainerClassList.concat(['i-ui-footer-subcontainer']),
-		_appendSubContainer: function(){
-			this.$element.before(this.subcontainer);
+		_observedOptions: ['height'],
+		_handleheightChange:function(value){
+			$(this.subcontainer).css('padding-bottom',value);
 		},
+		processSubcontainer:function(subcontainer){
+			$(subcontainer).css('padding-bottom',this.options.height);
+		}
 	});
+
 	
 	IUI.WidgetBuilder.plugin(Footer	);
 
@@ -2775,6 +2919,7 @@
 				$(this.contents).before($('<span class="ghost-span">'));
 				var _element=$(this.contents).detach();
 				_element.appendTo(this.element);
+				this.contents = IUI.makeUI(this.element, this.options.model);
 			}
 			$(this.element).addClass(this.classList.concat(this.options.classlist));
 			this.element.uiOverlay=this;
@@ -2877,13 +3022,16 @@
 		options:{
 			text: 'Button',
 		},
-		initialize: function(){
+		initialize: function(options){
+			(options.text) || (options.text=(options.element && options.element.innerHTML) || this.options.text);
 			IUI.Widget.prototype.initialize.apply(this,arguments);			
 			this._attachEvents();
 		},
+		_handletextChange: function(value){
+			this.element.children[0].innerHTML=value;
+		},
 		_processOptions: function(wrapper){
 			IUI.Widget.prototype._processOptions.apply(this,arguments);		
-			this.options.text=(this.element && this.element.innerHTML) || this.options.text;
 			wrapper.children[0].innerHTML=this.options.text;
 		},
 		_attachEvents: function(){
@@ -3367,17 +3515,19 @@
 			checked:false
 		},
 		initialize: function(){
-			
 			this.options.checked=(this.options.checked===true || this.options.checked==="true" || this.options.checked==="checked");			
 			IUI.Widget.prototype.initialize.apply(this,arguments);		
+		},
+		_handlevalueChange: function(val){
+			this.input.value=val;
 		},
 		onTemplateAttach:function(wrapper){
 			this.input=wrapper.children[0];
 		},
 		_processOptions: function(wrapper){
 			IUI.Widget.prototype._processOptions.apply(this,arguments);
-			this.label=new IUI.uiWidgets.FormLabel({text: this.options.text});
-			$(wrapper).append(this.label.$element);
+			this.labelcontainer=IUI.makeUI('<div><FormLabel text="'+this.options.text+'"></FormLabel></div>', this.options.model);
+			$(wrapper).append(this.labelcontainer.widgets[0].$element);
 			this.input.value=this.options.value;
 			if(this.options.group){
 				this.input.name=this.options.group
@@ -3399,6 +3549,7 @@
 	});
 	
 	IUI.WidgetBuilder.plugin(Radio);
+
 
 
 });
@@ -3509,76 +3660,55 @@
 			
 			classList: IUI.Widget.prototype.classList.concat(['i-ui-combobox']),
 			initialize: function(options){
-				var textAttribute=this.options.textAttribute, idAttribute=this.options.idAttribute;
-				if(options.element && !options.data){
-					var _data=[];
-					$(options.element).find('option').each(function(idx,elem){
-						var obj={}
-							obj[textAttribute]=elem.innerHTML;
-							obj[idAttribute]=elem.id;
-						_data.push(obj);
-					});
-					options.data=_data;
+				var _templateExtras='';
+				if(options.datamart){
+					$(options.element).removeAttr('datamart');
+					_templateExtras=_templateExtras+' datamart="'+options.datamart+'" ';
+					delete options.datamart;
 				}
+				if(options.data){
+					$(options.element).removeAttr('data');
+					_templateExtras=_templateExtras+' data="'+options.data+'" ';
+					delete options.data;
+				}
+				this.tagTemplate ='<listview class="i-ui-dropdown-list" '+_templateExtras+'><division class="i-ui-option-item" ii-id="::'+(options.idfield||this.options.idfield)+'::">::'+(options.textfield||this.options.textfield)+'::</division></listview>'
 				InputBox.prototype.initialize.apply(this,arguments);		
 			},
-			_createPopup:function(data){
-					var textAttribute=this.options.textAttribute, 
-						idAttribute=this.options.idAttribute,
-						_elem=this.$element;
-					
-					var dataMapper=function(_data,idx){
-						var elem=document.createElement('div');
-						$(elem).addClass('i-ui-option-item');
-						if(_data[idAttribute]){
-							elem.id=_data[idAttribute];
-						}
-						elem.innerHTML=_data[textAttribute];
-						elem._uiDataIndex=idx;
-						return elem;
-					}
-					
-					if(this.popup){
-						this.popup.setContents(data.map(dataMapper))
-						this.popup.options.animateObjectOpen.height=2*data.length+'em'
-					}else{
-						this.popup=IUI.createOverlay({
-							anchor: this.element,
-							contents: data.map(dataMapper),
-							button: this.element.querySelector('.i-ui-dropbutton-container'),
-							maxHeight: '15em',
-							height: (2*this.options.data.length)+'em',
-							opening: function(){
-								_elem.addClass('i-ui-active');
-							},
-							close: function(){
-								_elem.removeClass('i-ui-active');
-							}
-							
-						});
-					}
+			_createPopup:function(){
+				var _elem=this.$element;
+				this.popup=IUI.createOverlay({
+					anchor: this.element,
+					contents: this.tagTemplate,
+					model: this.options.model,
+					button: this.element.querySelector('.i-ui-dropbutton-container'),
+					maxHeight: '15em',
+					height: '15em',
+					opening: function(){
+						_elem.addClass('i-ui-active');
+					},
+					close: function(){
+						_elem.removeClass('i-ui-active');
+					}							
+				});
+				debugger;
+				this.dataMart = this.popup.contents.widgets[0].dataMart;
 			},
-			onDataFetch: function(e){
-				var data=e.data;
-				this._createPopup(data);
-				this.options.data=data;
+			onRender: function(){	
+				this._createPopup();
 			},
-			onRender: function(){
-				this._createPopup(this.options.data);
-			},
-			options: {			
-				textAttribute: 'text',
-				idAttribute: 'id'
+			options:{
+				idfield: 'id',
+				textfield: 'text',
 			},
 			_attachEvents: function(){
 				var that=this;
 				InputBox.prototype._attachEvents.apply(this,arguments);
-				$(this.popup.element).on('click','.i-ui-option-item',function(e){
-					var index=e.currentTarget._uiDataIndex;
-					if(typeof index !== "undefined"){
-						that.value(that.options.data[index][that.options.textAttribute]);
-						that.trigger('change',{value:that.options.data[index] });
-					}
+				$(this.popup.element).on('click','.i-ui-list-item',function(e){
+					debugger;
+					var index=$(e.currentTarget).index();
+					that.value(that.dataMart.data[index][that.options.textfield]);
+					that.trigger('change',{value:that.dataMart.data[index]});
+					
 				}.bind(this));
 			},
 		});

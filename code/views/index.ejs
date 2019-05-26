@@ -14,7 +14,25 @@
   </head>
   <body>
 
-  <view name="under-construction-view">
+
+  <view name="welcome-view" viewmodel="welcome-model" templateurl="/views/welcomeView.html"></view>
+ 
+  <view name="contents-view">
+	<sidebar id="widgets-sidebar" width="25rem">
+	
+	</sidebar>
+	<exhibit>
+		<viewport class="contents-view" name="contents-viewport">
+		
+		
+		
+		</viewport>
+	
+	</exhibit>
+  
+  </view>
+
+  <view name="under-construction-view"  class="i-ui-exhibit">
 		<img id="bongo-cat-coder" src="/images/bongo-cat-coder.gif">
 		<div class="warning-page-text">
 			<div>
@@ -25,9 +43,26 @@
 		</div>
   </view>
   
+  <view name="home-view" class="i-ui-exhibit">
+	<div class="front-text">
+			<div class="big-text font-heading no-select">IUI<div class="extension">.js</div></div>
+			<div class="description no-select">Fast and Easy UI Engine</div>
+		
+			<div id="front-section" class="sections no-select">
+				<div class="section-item" data-view="welcome-view" >INTRODUCTION</div>
+					<div class="separator" ></div>
+				<div class="section-item" data-view="under-construction-view">COMPONENTS</div>
+					<div class="separator"></div>
+				<div class="section-item" data-view="under-construction-view">VIEWS</div>
+					<div class="separator"></div>
+				<div class="section-item" data-view="under-construction-view">UTILITIES</div>
+			</div>
+		</div>
   
-  <exhibit id="home-exhibit" class="home-exhibit">
-	<div class="header">
+  </view>
+  
+  <exhibit class="home-exhibit">
+	<header padding-top="1rem" height="4rem" z-index="3"> 
 		<div class="header-big-text font-heading no-select">IUI<div class="extension">.js</div></div>
 		<div class="heaeder-links no-select">
 			<div class="sections">
@@ -40,30 +75,15 @@
 				<div class="section-item">Download</div>
 			</div>
 		</div>
-	</div>
+	</header>
 	 
 	<exhibit class="front-exhibit">
-		<div class="front-text">
-			<div class="big-text font-heading no-select">IUI<div class="extension">.js</div></div>
-			<div class="description no-select">Fast and Easy UI Engine</div>
+		<viewport name="application-viewport" defaultView="home-view" class="i-ui-exhibit">
+			
+			
+		</viewport>	
 		
-			<div id="front-section" class="sections no-select">
-				<div class="section-item" view="widget-view" >WIDGETS</div>
-					<div class="separator" ></div>
-				<div class="section-item" view="container-view">CONTAINERS</div>
-					<div class="separator"></div>
-				<div class="section-item" view="layouts-view">LAYOUTS</div>
-					<div class="separator"></div>
-				<div class="section-item" view="utility-view">UTILITIES</div>
-			</div>
-		</div>
 	</exhibit>
-	</exhibit>
-	<exhibit id="content-exhibit" class="content-exhibit">
-		<viewport defaultView="under-construction-view" class="main-content">
-			
-			
-		</viewport>		
 	</exhibit>
 	<div class="backdrop"><div class="backdrop-traingle"></div></div>
   

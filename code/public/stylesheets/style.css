@@ -86,22 +86,19 @@ a {
     width: 22%;
     font-size: 4rem;
 }
-.header {
-    position: absolute;
-    height: 4rem;
+.i-ui-navbar {
     width: 100%;
-    padding-top: 2rem;
-    color: white;
+     color: white;
     z-index: 2;
 	top: 0;
 }
-.header .section-item {
+.i-ui-navbar .section-item {
 	margin: 0;
     font-size: 1.5rem;
     width: 9rem;
     text-align: center;
 }
-.header .separator{
+.i-ui-navbar .separator{
 	height: 1em;
 }
 .heaeder-links {
@@ -123,10 +120,6 @@ div#content-exhibit {
     display: inline-block;
     padding: 0 1rem;
     line-height: 1;
-}
-
-div#home-exhibit {
-    padding-top: 5rem;
 }
 
 .front-exhibit {
@@ -177,9 +170,76 @@ div#home-exhibit {
 	padding-top: 3rem;
 }
 
-@media only screen and (max-width: 1440px){
+.color-light{
+	color: #8f6ce2;
+}
+.color-dark{
+	color: #411877;
+}
+.color-mid{
+	color: #673ab7;
+}
+#ext-arch{
+	width: 59%;
+    margin-right: auto;
+    margin-left: auto;
+    display: block;
+}
+img#basic-arch {
+    background: white;
+    border-radius: 5em;
+    width: 59%;
+    margin-right: auto;
+    margin-left: auto;
+    display: block;
+    border: 1px solid #411877;
+}
+/************************ Welcome Page ****************************/
+.welcome-page-heading {
+    font-size: 6rem;
+    line-height: 1;
+    border-bottom: 2px solid #411877;
+}
+.welcome-page-sub-heading{
+	font-size: 4rem;
+}
+.welcome-page-heading .extension {
+    font-size: 3rem;
+}
+div#widgets-sidebar {
+    border-right: 2px solid #4a2284;
+    box-shadow: 2px 0 4px 0 #9674eb;
+}
+
+.contents-view {
+    padding: 2rem;
+}
+
+.feature-list .i-ui-list-item.i-ui-container {
+    display: block;
+    font-size: 2rem;
+    line-height: 2;
+}
+.bullet-div {
+    padding-left: 4rem;
+}
+.bullet-div:before {
+    content: '#';
+    position: absolute;
+    left: 1rem;
+    transform: rotateZ(-25deg);
+    font-size: 3rem;
+    top: 0;
+    line-height: 1.5;
+    color: #8f6ce2;
+}
+
+
+/*******************************************************************/
+
+@media only screen and (max-width: 1820px){
 	#front-section .section-item {
-		min-width: 38rem;
+		min-width: 45rem;
 	}
 	#front-section .separator:nth-child(4) {
 		display: none;
