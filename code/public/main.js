@@ -37,10 +37,7 @@ require(['jquery','IUI'],function($,IUI){
 	
 	var _animateOutOfHome= function(handler){
 		
-		animateStyle($('.backdrop'),'height', '4rem', function(){
-			$('.contents-viewport').show();
-			$('.sidebar-viewport').show();
-		});
+		animateStyle($('.backdrop'),'height', '4rem');
 		setTimeout(function(){
 			animateStyle($('.header-big-text'),'margin-left', '0', 250);
 		}, 400);
@@ -64,7 +61,11 @@ require(['jquery','IUI'],function($,IUI){
 			require(['sidebarView'],function(){
 				IUI.View.renderViewInViewport('contents-view','application-viewport');
 				IUI.View.renderViewInViewport($(e.currentTarget).data('view'),'contents-viewport');
-				IUI.View.renderViewInViewport('sidebar-view','sidebar-viewport');				
+				IUI.View.renderViewInViewport('sidebar-view','sidebar-viewport');		
+				setTimeout(function(){
+						$('.contents-viewport').show();
+						$('.sidebar-viewport').show();
+				},500);
 			});
 		})
 	});
