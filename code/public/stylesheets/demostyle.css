@@ -1,0 +1,77 @@
+body {
+    padding: 0;
+    margin: 0; 
+    line-height: 1em;
+    font: 14px  'Didact Gothic', sans-serif;
+	height: 100%;
+	width: 100%;
+}
+html{
+	font-size: 14px;
+	height: 100%;
+	width: 100%;
+}
+.font-heading{
+ font: 1em "Baloo Bhai", cursive;	
+}
+
+.color-light{
+	color: #8f6ce2;
+}
+.color-dark{
+	color: #411877;
+}
+.color-mid{
+	color: #673ab7;
+}
+
+.col-2:first-child {
+    border-right: 1px solid #673ab7;
+}
+.col-2 {
+    width: 49%;
+    vertical-align: text-bottom;
+    height: 100%;
+    display: inline-block;
+    padding: 2em;
+    box-sizing: border-box;
+}
+
+.top-label {
+    position: absolute;
+    top: 0;
+    line-height: 2;
+    padding: 0.5em 1em;
+    background: #3e1472;
+    z-index: 4;
+    color: #efeafa;
+}
+.label-right{
+	right: 0;
+    border-bottom-left-radius: 2em;
+}
+.label-left{
+	 left: 0;	
+    border-bottom-right-radius: 2em;
+}
+span {
+    line-height: 1.5em;
+}
+.example-exhibit {
+    box-shadow: 0 0 4px 0 #9674eb inset;
+    font-size: 1.25em;
+    border-radius: 1em;
+    border: 1px solid #8f6ce2;
+    padding: 0.5em;
+    overflow: hidden;
+    background: #efeafa;
+}
+.example-html {
+    white-space: pre;
+    overflow-wrap: break-word;
+    text-overflow: clip;
+    word-break: unset;
+    width: 100%;
+	height: 100%;
+	overflow: auto;
+}

@@ -1,0 +1,19 @@
+var fs=require('fs');
+var path=require('path');
+
+try{
+	var example = fs.readFileSync(path.join(__dirname, 'examples/mainExample.html')).toString();
+
+	module.exports = {
+		widgetName:'<%=name%>',
+		widgetType: '<%=widgetType%>',
+		description: '',
+		attributeList:<%-JSON.stringify(options)%>,
+		eventList: <%-JSON.stringify(events)%>,
+		apiList: <%-JSON.stringify(APIs)%>,
+		onservables: <%-JSON.stringify(obserbavleOptions)%>,
+		example: example
+	};
+}catch(err){
+	console.log(err);
+}

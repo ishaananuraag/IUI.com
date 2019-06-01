@@ -2194,6 +2194,7 @@
   }
 })(function(IUI){
 
+	
 	var viewPromiseMap = {
 		
 	}
@@ -2236,10 +2237,12 @@
 			context: 'default'
 		},
 		_honorViewPromise: function(){
-			var _name = IUI.View.getName(this);
-			if(viewPromiseMap[_name]){
-				IUI.View.renderViewInViewport(this, viewPromiseMap[_name]);
+			var _name = IUI.View.getName(this),
+				viewPromise = viewPromiseMap[_name] || viewPromiseMap[this._uid];
+			if( viewPromise ){
+				IUI.View.renderViewInViewport(this, viewPromise);
 				delete viewPromiseMap[_name];
+				delete viewPromiseMap[this._uid];
 			}
 		},
 		_handleviewmodelChange:function(value){
@@ -3027,6 +3030,9 @@
 			IUI.Widget.prototype.initialize.apply(this,arguments);			
 			this._attachEvents();
 		},
+		_handlevalueChange: function(value){
+			this.value(value);
+		},
 		_handletextChange: function(value){
 			this.element.children[0].innerHTML=value;
 		},
@@ -3402,6 +3408,7 @@
 		},
 		toggle: function(value){
 			this.$element.toggleClass('i-ui-active',value);
+			this.options.value = this.$element.hasClass('i-ui-active');
 			this.trigger('toggle',{value:this.value()});
 		},
 		_attachEvents: function(){

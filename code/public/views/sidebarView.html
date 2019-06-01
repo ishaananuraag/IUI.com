@@ -1,0 +1,33 @@
+<header background-color="#8f6ce2" height="3.5rem">
+	<div class="sidebar-heading font-heading">Index</div>
+</header>
+<exhibit class="sidebar-list-container">
+	<div class="sidebar-list-item" ii-view="welcome-view">Introduction</div>
+	<div class="sidebar-list-item" >Widgets and Containers</div>
+	<div class="sidebar-list-item" >IUI Template</div>
+	<div class="sidebar-list-item" >Two-way DataBinding</div>
+		<hr>
+	<div class="font-heading sidebar-sub-heading color-mid">Bindings <span class="sidebar-icon expand-collapse-icon"><i class="fa fa-minus" ></i></span></div>
+		<listview class="widget-list" data="::bindings::">
+			<division class="sidebar-list-item" ii-model="::text.toLowerCase().replace(/ /g,'')::">::text::</division>
+		</listview>
+		<hr>
+	<div class="font-heading sidebar-sub-heading color-mid">Widgets <span class="sidebar-icon expand-collapse-icon"><i class="fa fa-minus" ></i></span></div>
+		<listview class="widget-list" data="::widgets::">
+			<division class="sidebar-list-item" ii-model="::text.toLowerCase().replace(/ /g,'')::">::text::</division>
+		</listview>
+		<hr>
+	<div class="font-heading sidebar-sub-heading color-mid">Containers
+		<span class="sidebar-icon expand-collapse-icon"><i class="fa fa-minus"></i></span>
+	</div>
+		<listview class="container-list" data="::containers::">
+			<division class="sidebar-list-item" ii-model="::text.toLowerCase().replace(/ /g,'')::">::text::</division>
+		</listview>
+		<hr>
+	<div class="sidebar-list-item" >Behaviors</div>
+	<div class="sidebar-list-item" >VVVM Model</div>
+	<div class="sidebar-list-item" >Animations</div>
+	<div class="sidebar-list-item" >Extending IUI</div>
+	<div class="sidebar-list-item" >Contact Us</div>
+	<div class="sidebar-list-item" >Download</div>
+</exhibit>

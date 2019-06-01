@@ -1,27 +1,16 @@
 /************** This will move to LibraryLoader.js ******************/
 require.config({
     paths:{
-		'marionette':'/javascripts/vendors/marionette',
-		'backbone':'/javascripts/vendors/backbone',
-		'backbone.radio':'/javascripts/vendors/backbone.radio',
-		'IUI':'/javascripts/vendors/IUI',
+		'IUI':'/javascripts/vendors/IUI.min',
 		'jquery':'/javascripts/vendors/jquery',
 		'require':'/javascripts/vendors/require',
 		'text':'/javascripts/vendors/text',
 		'tpl':'/javascripts/vendors/tpl',
-		'underscore':'/javascripts/vendors/underscore',
+		'sidebarView':'/javascripts/views/HomepageView/sidebarView',
+		'documentView':'/javascripts/views/HomepageView/documentView',
 	},	
 	shim:{
-		"marionette": {
-			exports: "Marionette",
-			deps: ['backbone','backbone.radio']
-		},
-		"underscore": {
-			exports: "_",
-		},
-		"backbone": {
-			exports: "Backbone",
-		},
+		
 		"jquery": {
 			exports: "$",
 		},
@@ -33,7 +22,7 @@ require.config({
 });
 
 
-require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
+require(['jquery','IUI'],function($,IUI){
 	window.$=$;
 	window.IUI=IUI;
 	
@@ -48,7 +37,10 @@ require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
 	
 	var _animateOutOfHome= function(handler){
 		
-		animateStyle($('.backdrop'),'height', '4rem');
+		animateStyle($('.backdrop'),'height', '4rem', function(){
+			$('.contents-viewport').show();
+			$('.sidebar-viewport').show();
+		});
 		setTimeout(function(){
 			animateStyle($('.header-big-text'),'margin-left', '0', 250);
 		}, 400);
@@ -69,8 +61,11 @@ require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
 	
 	$('.front-text').on('click','.section-item', function(e){
 		_animateOutOfHome(function(){
-			IUI.View.renderViewInViewport('contents-view','application-viewport');
-			IUI.View.renderViewInViewport($(e.currentTarget).data('view'),'contents-viewport');
+			require(['sidebarView'],function(){
+				IUI.View.renderViewInViewport('contents-view','application-viewport');
+				IUI.View.renderViewInViewport($(e.currentTarget).data('view'),'contents-viewport');
+				IUI.View.renderViewInViewport('sidebar-view','sidebar-viewport');				
+			});
 		})
 	});
 	
@@ -78,7 +73,7 @@ require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
 	
 	
 	var welcomeModel = {
-		features:['14 Ready to use Widgets which can be directly plugged into your HTML.',
+		features:['17 Ready to use Widgets which can be directly plugged into your HTML.',
     			  '7 Ready to use Layout container tags to help you design your HTML quickly.',
     			  'Two-way data binding updates the binded IUI Component directly on setting a value of the model.',
     			  'Handle multitude of events triggered by IUI Widgets to customize your application flow seemlesly.',
@@ -88,15 +83,12 @@ require(['marionette','jquery','IUI'],function(Marionette,$,IUI){
     			  'Link every module with a single API Call - <b class="color-dark">IUI.makeUI()</b>']
 	}
 	
+	
+	
 	new IUI.ViewModel({
 		name: 'welcome-model',
 		model: welcomeModel
 	});
-	
-	
-	
-	
-	
 	
 	
 

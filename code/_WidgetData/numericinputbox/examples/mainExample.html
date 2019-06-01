@@ -1,0 +1,13 @@
+<numericinputbox value="::number1::"></numericinputbox>
+<span> x </span>
+<numericinputbox value="::number2::"></numericinputbox>
+<span> = </span>
+<division display="inline-block">::number1 * number2::</division>
+ 
+<script>
+	var model = {
+		number1: 7,
+		number2: 2
+	};
+	IUI.makeUI(model)
+</script>

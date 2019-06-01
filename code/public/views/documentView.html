@@ -1,0 +1,30 @@
+<header height='7.25em'> 
+<division class="widget-name font-heading color-mid"> ::widget.widgetName::</division>
+</header>
+<exhibit>	
+	<division class="widget-type color-light"> ::widget.widgetType::</division>
+	<division class="widget-description"> ::widget.description::</division>
+	<div class="example-container">
+		<iframe class="example-output-frame" src="/demoframe"></iframe>
+	</div>
+	<div style="display: flex;">
+		<div class="col-3">
+			<div class="widget-subheading font-heading color-mid">Attributes</div>
+			<listview  class="full-width" data="::widget.attributeList::">
+				<division class="widget-main-item">::text::</division>
+			</listview>
+		</div>
+		<div class="col-3">
+			<div class="widget-subheading font-heading color-mid">Events</div>
+			<listview class="full-width" data="::widget.eventList::">
+				<division class="widget-main-item">::text::</division>
+			</listview>
+		</div>
+		<div class="col-3">
+			<div class="widget-subheading font-heading color-mid">Observered Options</div>
+			<listview  class="full-width" data="::widget.onservables::">
+				<division class="widget-main-item">::text::</division>
+			</listview>
+		</div>
+	</div>
+</exhibit>

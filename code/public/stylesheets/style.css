@@ -123,7 +123,7 @@ div#content-exhibit {
 }
 
 .front-exhibit {
-    overflow: auto;
+    overflow: hidden;
 }
 
 #front-section .separator {
@@ -161,6 +161,14 @@ div#content-exhibit {
     height: 30rem;
     border: 12px solid #D32F2F;
     box-shadow: 0 0 11px 1px black, 15px 4px 5px 3px black inset, 0 0 0px 16px #B39DDB;
+}
+
+.full-width{
+		width: 100%;
+}
+
+.full-width .i-ui-list-item{
+	display: block;
 }
 
 .main-content{
@@ -211,7 +219,7 @@ div#widgets-sidebar {
     box-shadow: 2px 0 4px 0 #9674eb;
 }
 
-.contents-view {
+.contents-viewport {
     padding: 2rem;
 }
 
@@ -233,8 +241,112 @@ div#widgets-sidebar {
     line-height: 1.5;
     color: #8f6ce2;
 }
+.widget-list, .container-list,
+.container-list .i-ui-list-item, .widget-list .i-ui-list-item {
+    display: block;
+	padding-left: 0.35rem;
+}
 
+.sidebar-sub-heading {
+    font-size: 1.5em;
+    padding: 0.5rem;
+    margin-bottom: -8px;
+	position: relative;
+}
+.sidebar-heading {
+    padding: 0.5rem;
+    line-height: 1em;
+    font-size: 1.2em;
+}
 
+.sidebar-viewport{
+    font-size: 2rem;
+}
+.sidebar-list-item{
+    padding: 0.75rem;
+    border-bottom: 1px solid #9573eb4d;
+}
+
+.sidebar-list-item:hover{
+	color: #8f6ce2;
+}
+.sidebar-list-item:active{
+	color: #673ab7;
+	transform: translateX(1px) translateY(1px);	
+}
+.sidebar-sub-heading, .sidebar-list-container .sidebar-list-item{
+	cursor: pointer;
+}
+
+span.sidebar-icon.expand-collapse-icon {
+    font-size: 0.5em;
+    vertical-align: middle;
+    position: absolute;
+    top: 0;
+    right: 1rem;
+    line-height: 3.75em;
+    /* background: red; */
+}
+
+hr {
+    margin: 0;
+    border-color: #673ab7;
+    /* border: 1px solid; */
+}
+/*********************************************************************/
+
+.widget-name {
+    font-size: 6em;
+    line-height: 1;
+    margin-top: 0.25em;
+}
+
+.widget-type {
+    text-transform: uppercase;
+    font-size: 2em;
+    margin-top: -0.25em;
+    padding-left: 0.5em;
+}
+
+.i-ui-div.widget-description {
+    padding: 1em;
+    font-size: 2em;
+}
+
+.col-3 {
+    width: calc(100% / 3);
+	    text-align: center;
+}
+.col-4 {
+    width: calc(100% / 4);
+	    text-align: center;
+}
+
+.widget-subheading.font-heading.color-mid {
+    font-size: 2em;
+}
+.i-ui-div.widget-main-item {
+    font-size: 1.5em;
+}	
+
+.example-output-frame {
+    display: block;
+    height: 25em;
+    margin: 2em auto;
+    width: 80%;
+    background: white;
+    border: 1px solid #3f1674;
+    outline: none;
+    border-radius: 2em;
+    box-shadow: 0 0 4px 0 #9674eb;
+}
+.copyright-info {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    z-index: 4;
+    font-size: 1.2em;
+}
 /*******************************************************************/
 
 @media only screen and (max-width: 1820px){

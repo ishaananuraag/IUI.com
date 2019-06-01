@@ -17,12 +17,16 @@
 
   <view name="welcome-view" viewmodel="welcome-model" templateurl="/views/welcomeView.html"></view>
  
-  <view name="contents-view">
+  <view class="contents-view"  name="contents-view">
 	<sidebar id="widgets-sidebar" width="25rem">
-	
+		<viewport class="sidebar-viewport" display="none"  name="sidebar-viewport">
+		
+		
+		
+		</viewport>
 	</sidebar>
 	<exhibit>
-		<viewport class="contents-view" name="contents-viewport">
+		<viewport class="contents-viewport" display="none" name="contents-viewport">
 		
 		
 		
@@ -57,6 +61,7 @@
 					<div class="separator"></div>
 				<div class="section-item" data-view="under-construction-view">UTILITIES</div>
 			</div>
+			<div class="copyright-info">IUIjs is ISHAAN SINGH ©. This webite is created using IUIjs.</div>
 		</div>
   
   </view>
