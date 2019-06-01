@@ -1,5 +1,31 @@
-<ContainerHeaderCell></ContainerHeaderCell>
- 
+
+ <grid>
+	<Row>
+		<ContainerHeaderCell>
+			<division>::firstHeader::</division>
+		</ContainerHeaderCell>
+		
+		<ContainerHeaderCell>
+			<division>::secondHeader::</division>
+		</ContainerHeaderCell>
+		
+	</Row>
+	
+	<Row>
+		<Cell>
+			Ishaan
+		</Cell>
+		
+		<Cell>
+			Singh
+		</Cell>
+		
+	</Row>
+	
+</grid>
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		firstHeader: 'First Name',
+		secondHeader: 'Last Name'
+	});
 </script>

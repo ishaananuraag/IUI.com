@@ -1,5 +1,11 @@
-<DropDown></DropDown>
- 
+<DropDown data="::seasonsData::" value="::favSeason::">
+</DropDown>
+<division>::'The favrouite Season is '+favSeason::
+</division>
+
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		seasonsData: ['Autumn','Winter','Summer','Moonsoon','Spring','Flood','Draught'],
+		favSeason: 'Winter'
+	})
 </script>

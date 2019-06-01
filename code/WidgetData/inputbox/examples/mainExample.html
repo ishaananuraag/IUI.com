@@ -1,5 +1,10 @@
-<InputBox></InputBox>
- 
+<formLabel>Enter Your Name : </formLabel>
+<InputBox value="::name::"></InputBox>
+<division>::'Welcome '+ name::</division>
+
+
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		name: 'Ishaan Singh'
+	})
 </script>

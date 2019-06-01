@@ -121,6 +121,9 @@ position: absolute;
     width: 1em;
     margin: 0 0.5em;	
 }
+.i-ui-list-item .i-ui-dropdown-list{
+	cursor: pointer;
+}
 .i-ui-dropbutton {
     height: 100%;
     line-height: 2em;
@@ -194,6 +197,9 @@ br {
 	height: 100%;
 	width: 100%;
 	overflow: auto;
+}
+.i-ui-footer {
+    bottom: 0;
 }
 .i-ui-sidebar-subcontainer{
 		width: 100%;

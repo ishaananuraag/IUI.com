@@ -55,7 +55,7 @@ define(function(){
 		model: {
 			widgets : ['Button','Toggle Button','Submit Button','Grid','Cell','HeaderCell','Input Box','Numeric Input Box','Dropdown','Combobox',		 	 'Form Label','ListView','Radio','Slider','Switch','Division','ViewPort'],
 			
-			containers : ['Container','Radio Group','Row','Container Cell','Container Header Cell','View','Vertical Scroller','Footer','Layout','Navbar',			   'Sidebar','Header','Context Menu'],
+			containers : ['Container','Radio Group','Row','Container Cell','Container Header Cell','View','Vertical Scroller','Footer','Layout','Navbar','Exhibit','Sidebar','Header','Context Menu'],
 			bindings: ['Attribute Bindings','EventGroups','DataMarts','Style Bindings']
 		}
 	});

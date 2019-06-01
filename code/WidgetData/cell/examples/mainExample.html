@@ -1,5 +1,23 @@
-<Cell></Cell>
- 
+<grid>
+	<Row>
+		<Cell>::lastName::
+		</Cell>
+		<Cell>::firstName::
+		</Cell>
+	</Row>
+	
+	<Row>
+		<Cell>::firstName::
+		</Cell>
+		<Cell>::lastName::
+		</Cell>
+	</Row>
+</grid>
+
 <script>
-	IUI.makeUI()
+	var model={
+		firstName: 'Ishaan',
+		lastName: 'Singh'
+	}
+	IUI.makeUI(model);
 </script>

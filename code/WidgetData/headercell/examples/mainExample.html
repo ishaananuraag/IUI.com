@@ -1,5 +1,22 @@
-<HeaderCell></HeaderCell>
- 
+ <grid>
+	<Row>
+		<HeaderCell>::firstHeader::</HeaderCell>
+		<HeaderCell>::secondHeader::</HeaderCell>
+	</Row>
+	
+	<Row>
+		<Cell>
+			Ishaan
+		</Cell>
+		<Cell>
+			Singh
+		</Cell>
+	</Row>
+</grid>
+
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		firstHeader: 'First Name',
+		secondHeader: 'Last Name'
+	});
 </script>

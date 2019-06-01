@@ -1,5 +1,36 @@
-<ContainerCell></ContainerCell>
+<grid>
+	<Row>
+		<headerCell>Weight(kg)
+		</headerCell>
+		
+		<headerCell>Height(cm)
+		</headerCell>
+		
+		<headerCell>BMI
+		</headerCell>
+	</Row>
+	
+	<Row>
+		<ContainerCell >
+			<numericinputBox width="7rem" value="::weight::">
+			</numericinputBox>
+		</ContainerCell>
+		
+		<ContainerCell >
+			<numericinputBox width="7rem" value="::height::">
+			</numericinputBox>
+		</ContainerCell>
+		
+		<Cell>::(weight * (10000) / (height * height)).toFixed(3)::
+		</Cell>
+	</Row>
+	
+</grid>
+
  
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		weight: 50,
+		height: 126
+	});
 </script>

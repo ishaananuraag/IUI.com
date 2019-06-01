@@ -1,7 +1,7 @@
 /************** This will move to LibraryLoader.js ******************/
 require.config({
     paths:{
-		'IUI':'/javascripts/vendors/IUI.min',
+		'IUI':'/javascripts/vendors/IUI',
 		'jquery':'/javascripts/vendors/jquery',
 		'require':'/javascripts/vendors/require',
 		'text':'/javascripts/vendors/text',

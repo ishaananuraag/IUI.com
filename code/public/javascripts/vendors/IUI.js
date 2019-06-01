@@ -369,7 +369,7 @@
 
 	var _templateToFunctionWrapper=function(key,index,str){
 		var _key=key.slice(2,-2);		
-		return (index?'"+':'')+'(function(){ return '+_key+' })()'+((index+key.length===str.length)?'':'+"');
+		return (index?'\'+':'')+'(function(){ return '+_key+' })()'+((index+key.length===str.length)?'':'+\'');
 	}
 	
 	
@@ -549,6 +549,10 @@
 			container : container,
 			model : model 
 		});
+		
+		if(options.submodel){
+			options.model = options.model[submodel];
+		}
 		
 		return new this(options);
 	}
@@ -868,6 +872,9 @@
 			if(typeof options.validations === "string"){
 				options.validations=options.validations.split(',').map(function(elem){return elem.trim()})
 			}
+			if(typeof options.escapehtml === "string"){
+				options.escapehtml=JSON.parse(options.escapehtml);
+			}
 			this.boundModelOptions={
 				validator: this._validate.bind(this)
 			}
@@ -1061,7 +1068,8 @@
 		},
 		options:{
 			enable: true,
-			isattached: true,			
+			isattached: true,
+			escapehtml: false			
 		}
 		
 	});
@@ -3030,9 +3038,6 @@
 			IUI.Widget.prototype.initialize.apply(this,arguments);			
 			this._attachEvents();
 		},
-		_handlevalueChange: function(value){
-			this.value(value);
-		},
 		_handletextChange: function(value){
 			this.element.children[0].innerHTML=value;
 		},
@@ -3411,6 +3416,9 @@
 			this.options.value = this.$element.hasClass('i-ui-active');
 			this.trigger('toggle',{value:this.value()});
 		},
+		_handlevalueChange: function(value){
+			this.value(value);
+		},
 		_attachEvents: function(){
 			var that=this;
 			
@@ -3697,8 +3705,6 @@
 						_elem.removeClass('i-ui-active');
 					}							
 				});
-				debugger;
-				this.dataMart = this.popup.contents.widgets[0].dataMart;
 			},
 			onRender: function(){	
 				this._createPopup();
@@ -3707,15 +3713,19 @@
 				idfield: 'id',
 				textfield: 'text',
 			},
+			_getDataMart: function(){
+				return this.popup.contents.widgets[0].dataMart;
+			},
 			_attachEvents: function(){
 				var that=this;
 				InputBox.prototype._attachEvents.apply(this,arguments);
 				$(this.popup.element).on('click','.i-ui-list-item',function(e){
-					debugger;
-					var index=$(e.currentTarget).index();
-					that.value(that.dataMart.data[index][that.options.textfield]);
-					that.trigger('change',{value:that.dataMart.data[index]});
-					
+					var index=$(e.currentTarget).index(),
+						dataMart=that._getDataMart();
+					if(dataMart){
+						that.value(dataMart.data[index][that.options.textfield]);
+						that.trigger('change',{value:dataMart.data[index]});
+					}
 				}.bind(this));
 			},
 		});

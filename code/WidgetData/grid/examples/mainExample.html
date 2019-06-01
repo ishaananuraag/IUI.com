@@ -1,5 +1,15 @@
-<Grid></Grid>
+<Grid datamart="grid-data">
+	<column title="First Name">::firstName::</column>
+	<column title="Last Name">::lastName::</column>
+</Grid>
  
 <script>
-	IUI.makeUI()
+	
+	new IUI.DataMart({
+		name: 'grid-data',
+		data: [ {firstName:'Ishaan',lastName:'Singh'},
+				{firstName:'Lyra',lastName:'Singh'} ]
+	}).fetch();
+	
+	IUI.makeUI();
 </script>
