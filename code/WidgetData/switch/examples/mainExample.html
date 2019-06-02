@@ -1,5 +1,11 @@
-<Switch></Switch>
- 
+<exhibit background="::darkMode?'#0e0e0e':'#f5f5f5'::" 
+		 color="::darkMode?'#f5f5f5':'#0e0e0e'::"
+		 padding="2em">
+
+	<formLabel>Change The Mood : </formLabel><Switch value="::darkMode::"></Switch>
+</exhibit>
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		darkMode: true
+	})
 </script>

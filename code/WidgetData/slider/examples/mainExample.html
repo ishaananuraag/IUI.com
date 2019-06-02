@@ -1,5 +1,9 @@
-<Slider></Slider>
+<exhibit background="hsl(::sliderValue::,40%,60%)">
+	<Slider min="0" max="360" value="::sliderValue::"></Slider>
+</exhibit>
  
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		sliderValue:0
+	})
 </script>

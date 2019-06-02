@@ -1,5 +1,43 @@
-<ListView></ListView>
+<h3>Select Preference</h3>
+<ListView data="::preferences::">
+<toggleButton margin="1rem" 
+			  value="::selected::"
+			  text="::text::"
+			  toggle="alert('You '+(this.value()?'like':'unliked')+' '+this.options.text)">
+</toggleButton>
+</ListView>
  
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		preferences: [
+			{
+				text: 'Chocolate',
+				selected:true
+			},
+			{
+				text: 'Milk',
+				selected:true
+			},
+			{
+				text: 'Cabbage',
+				selected: false
+			},
+			{
+				text: 'Chicken',
+				selected: false
+			},
+			{
+				text: 'Bread',
+				selected: true
+			},
+			{
+				text: 'Eggs',
+				selected: true
+			},
+			{
+				text: 'Potato',
+				selected: false
+			},
+		]
+	})
 </script>

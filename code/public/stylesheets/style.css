@@ -245,6 +245,7 @@ div#widgets-sidebar {
 .container-list .i-ui-list-item, .widget-list .i-ui-list-item {
     display: block;
 	padding-left: 0.35rem;
+    padding-right: 2px;
 }
 
 .sidebar-sub-heading {

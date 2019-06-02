@@ -1,5 +1,20 @@
-<RadioGroup></RadioGroup>
+<RadioGroup group="Favrouite-food" 
+			value="::favrouiteChocolate::">
+			
+	<Radio value="Dark Chocolate">Dark Chocolate
+	</Radio>
+	<Radio value="White Chocolate" text="White Chocolate">
+	</Radio>
+
+</RadioGroup>
+
+<div> You Like : 
+	<division display="inline-block">::favrouiteChocolate::
+	</division>
+</div>
  
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		favrouiteChocolate: 'Dark Chocolate'
+	});
 </script>

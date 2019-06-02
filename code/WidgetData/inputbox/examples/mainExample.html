@@ -1,10 +1,13 @@
-<formLabel>Enter Your Name : </formLabel>
-<InputBox value="::name::"></InputBox>
-<division>::'Welcome '+ name::</division>
+<formLabel>Enter Your First Name : </formLabel>
+<InputBox value="::firstName::"></InputBox><br>
+<formLabel>Enter Your Last Name : </formLabel>
+<InputBox value="::lastName::"></InputBox>
+<division>Welcome ::firstName:: ::lastName::</division>
 
 
 <script>
 	IUI.makeUI({
-		name: 'Ishaan Singh'
+		firstName: 'Ishaan',
+		lastName: 'Singh'
 	})
 </script>

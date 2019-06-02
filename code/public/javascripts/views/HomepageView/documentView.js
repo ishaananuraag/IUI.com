@@ -19,8 +19,11 @@ define(function(){
 		render: function(){
 			this.$el.find('.example-output-frame').on('load', function(){
 				var _body = $(this).contents();
-				_body.find('.example-html').text(obj.widget.example);
-				_body.find('.example-output').html(obj.widget.example);
+				
+				setTimeout(function(){
+					_body.find('.example-html').text(obj.widget.example);
+					_body.find('.example-output').html(obj.widget.example);					
+				});
 			});
 		}
 		

@@ -1,5 +1,20 @@
-<ToggleButton></ToggleButton>
+<toggleButton value="::value1::">Button One
+</toggleButton>
+
+<division>The button one is ::value1?'On':'Off';::
+</division>  
+
+<br>
+
+<toggleButton value="::value2::">Button Two
+</toggleButton>
+
+<division>The button one is ::value2?'On':'Off';::
+</division> 
  
 <script>
-	IUI.makeUI()
+	IUI.makeUI({
+		value1: true,
+		value2: false		
+	});
 </script>

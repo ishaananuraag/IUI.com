@@ -36,7 +36,10 @@ html{
     padding: 2em;
     box-sizing: border-box;
 }
-
+.example-output {
+    height: 100%;
+    overflow: auto;
+}
 .top-label {
     position: absolute;
     top: 0;
