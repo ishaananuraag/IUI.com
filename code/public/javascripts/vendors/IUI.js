@@ -369,7 +369,7 @@
 
 	var _templateToFunctionWrapper=function(key,index,str){
 		var _key=key.slice(2,-2);		
-		return (index?'\'+':'')+'(function(){ return '+_key+' })()'+((index+key.length===str.length)?'':'+\'');
+		return (index?'"+':'')+'(function(){ return '+_key+' })()'+((index+key.length===str.length)?'':'+"');
 	}
 	
 	
@@ -401,7 +401,7 @@
 //.replace(/'/g,'\\\'').replace(/"/g,'\\"')
 					lastMatch=_matches[_matches.length-1],
 					firstMatch=_matches[0];
-					_template=((string.indexOf(firstMatch)===0)?'':'"')+_template.replace(/"/g,'\\"')+((string.lastIndexOf(lastMatch)+lastMatch.length===string.length)?'':'"');
+					_template=((string.indexOf(firstMatch)===0)?'':'"')+_template+((string.lastIndexOf(lastMatch)+lastMatch.length===string.length)?'':'"');
 					exclusive=_matches[0].length==string.length;
 					return { template:_template,mappings:_matches.map(function(elem){ return elem.slice(2,-2).trim(); }), isExclusive:exclusive };
 		}
@@ -2063,8 +2063,12 @@
 	var ContextMenu=IUI.uiContainers.PopOver.extend({
 		name:'ContextMenu',
 		initialize: function(options){
+			var that=this;
 			options.button=null;
-			IUI.uiContainers.PopOver.prototype.initialize.apply(this,arguments);	
+			this.element=options.element;
+			setTimeout(function(){
+				IUI.uiContainers.PopOver.prototype.initialize.call(that,options);	
+			});
 			
 		},
 		options:{
@@ -3258,16 +3262,21 @@
 		classList: IUI.Widget.prototype.classList.concat(['i-ui-switch']),
 		events:IUI.Widget.prototype.events.concat(['click','toggle']),
 		options:{
+			value: false
 		},
 		initialize: function(){
 			IUI.Widget.prototype.initialize.apply(this,arguments);		
 			this.button=this.$element.find('.i-ui-switch-button');
 			this._attachEvents();
+			this.value(this.options.value);
 		},
 		_handleClick: function(e){
 			if(this.$element.hasClass('i-ui-switch-active')){
+				this.options.value=false;
 				this.$element.removeClass('i-ui-switch-active');
+				
 			}else{
+				this.options.value=true;
 				this.$element.addClass('i-ui-switch-active');				
 			}
 		},
@@ -3275,11 +3284,15 @@
 			var that=this;
 			this.$element.on('click','.i-ui-switch-button',this._handleClick.bind(this));
 		},
+		_handlevalueChanle: function(val){
+			return this.value(val);
+		},
 		value: function(val){
 			if(typeof val === "undefined"){
 				return this.$element.hasClass('i-ui-switch-active');
 			}else{
-				this.$element.toggleClass('i-ui-switch-active',val);				
+				this.$element.toggleClass('i-ui-switch-active',val);
+				this.options.value=val;
 			}
 		}
 	});
@@ -3541,6 +3554,7 @@
 		},
 		_processOptions: function(wrapper){
 			IUI.Widget.prototype._processOptions.apply(this,arguments);
+			this.options.text= this.options.text ||(this.element && this.element.innerHTML);
 			this.labelcontainer=IUI.makeUI('<div><FormLabel text="'+this.options.text+'"></FormLabel></div>', this.options.model);
 			$(wrapper).append(this.labelcontainer.widgets[0].$element);
 			this.input.value=this.options.value;
@@ -3592,8 +3606,7 @@
 			initialize: function(){
 				this._handleSpinStart=this._handleSpinStart.bind(this);	
 				this._handleSpinEnd=this._handleSpinEnd.bind(this);		
-				InputBox.prototype.initialize.apply(this,arguments);
-				this.step=Number(this.options.step);				
+				InputBox.prototype.initialize.apply(this,arguments);		
 			},
 			
 			events: InputBox.prototype.events.concat(['spin']),
@@ -3605,7 +3618,7 @@
 				precision:2
 			},			
 			_handleSpinStart: function(e){
-				var that=this, step=this.step;
+				var that=this, step=Number(this.options.step);
 				
 				if($(e.currentTarget).hasClass('i-ui-spinner-down')){
 					step=-step;
